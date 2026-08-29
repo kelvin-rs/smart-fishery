@@ -1,0 +1,55 @@
+waktu,tambak,jenis_ikan,suhu_c,ph,padat_tebar,hasil_program,hasil_rapidminer
+Pagi,A,Bandeng,28.0,8.0,Normal,Normal,Normal
+Pagi,A,Bandeng,25.0,6.0,Normal,Tidak Normal,Tidak Normal
+Pagi,A,Bandeng,29.1,7.9,Normal,Normal,Normal
+Pagi,A,Bandeng,30.2,6.5,Tidak Normal,Tidak Normal,Tidak Normal
+Pagi,A,Bandeng,20.6,6.6,Tidak Normal,Tidak Normal,Tidak Normal
+Pagi,A,Bandeng,28.3,7.8,Normal,Normal,Normal
+Pagi,B,Vaname,28.4,8.3,Normal,Normal,Normal
+Pagi,B,Vaname,30.5,6.7,Normal,Tidak Normal,Normal
+Pagi,B,Vaname,27.0,7.7,Normal,Normal,Normal
+Pagi,B,Vaname,25.6,6.8,Tidak Normal,Tidak Normal,Tidak Normal
+Pagi,B,Vaname,30.7,6.9,Tidak Normal,Tidak Normal,Tidak Normal
+Pagi,B,Vaname,28.8,9.1,Normal,Normal,Normal
+Pagi,C,Windu,28.9,8.0,Normal,Normal,Normal
+Pagi,C,Windu,25.6,9.2,Normal,Tidak Normal,Tidak Normal
+Pagi,C,Windu,28.0,7.9,Normal,Normal,Normal
+Pagi,C,Windu,25.7,9.3,Tidak Normal,Tidak Normal,Tidak Normal
+Pagi,C,Windu,25.8,9.4,Tidak Normal,Tidak Normal,Tidak Normal
+Pagi,C,Windu,28.6,7.8,Normal,Normal,Normal
+Siang,A,Bandeng,31.0,7.9,Normal,Normal,Normal
+Siang,A,Bandeng,33.5,9.5,Normal,Tidak Normal,Tidak Normal
+Siang,A,Bandeng,31.1,7.7,Normal,Normal,Normal
+Siang,A,Bandeng,25.2,9.6,Tidak Normal,Tidak Normal,Tidak Normal
+Siang,A,Bandeng,33.5,9.7,Tidak Normal,Tidak Normal,Tidak Normal
+Siang,A,Bandeng,31.5,7.6,Normal,Normal,Normal
+Siang,B,Vaname,31.2,7.5,Normal,Normal,Normal
+Siang,B,Vaname,32.8,9.7,Normal,Tidak Normal,Tidak Normal
+Siang,B,Vaname,30.8,7.6,Normal,Normal,Normal
+Siang,B,Vaname,33.0,9.8,Tidak Normal,Tidak Normal,Tidak Normal
+Siang,B,Vaname,34.4,9.7,Tidak Normal,Tidak Normal,Tidak Normal
+Siang,B,Vaname,30.9,7.7,Normal,Normal,Normal
+Siang,C,Windu,30.4,7.8,Normal,Normal,Normal
+Siang,C,Windu,33.5,9.6,Normal,Tidak Normal,Tidak Normal
+Siang,C,Windu,29.6,7.9,Normal,Normal,Normal
+Siang,C,Windu,32.7,9.5,Tidak Normal,Tidak Normal,Tidak Normal
+Siang,C,Windu,32.8,9.4,Tidak Normal,Tidak Normal,Tidak Normal
+Siang,C,Windu,29.9,8.0,Normal,Normal,Normal
+Sore,A,Bandeng,30.1,8.1,Normal,Normal,Normal
+Sore,A,Bandeng,32.2,9.3,Normal,Tidak Normal,Tidak Normal
+Sore,A,Bandeng,29.3,8.2,Normal,Normal,Normal
+Sore,A,Bandeng,33.4,9.2,Tidak Normal,Tidak Normal,Tidak Normal
+Sore,A,Bandeng,32.5,9.1,Tidak Normal,Tidak Normal,Tidak Normal
+Sore,A,Bandeng,29.6,8.3,Normal,Normal,Normal
+Sore,B,Vaname,30.7,7.1,Normal,Normal,Normal
+Sore,B,Vaname,32.8,6.5,Normal,Tidak Normal,Tidak Normal
+Sore,B,Vaname,28.9,7.2,Normal,Normal,Normal
+Sore,B,Vaname,31.0,6.4,Tidak Normal,Tidak Normal,Tidak Normal
+Sore,B,Vaname,26.1,6.3,Tidak Normal,Tidak Normal,Tidak Normal
+Sore,B,Vaname,29.2,7.3,Normal,Normal,Normal
+Sore,C,Windu,29.3,7.4,Normal,Normal,Normal
+Sore,C,Windu,25.4,6.2,Normal,Tidak Normal,Tidak Normal
+Sore,C,Windu,29.4,7.5,Normal,Normal,Normal
+Sore,C,Windu,26.5,6.1,Tidak Normal,Tidak Normal,Tidak Normal
+Sore,C,Windu,25.6,6.0,Tidak Normal,Tidak Normal,Tidak Normal
+Sore,C,Windu,30.7,7.6,Normal,Normal,Normal

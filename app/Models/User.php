@@ -46,4 +46,9 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function tambak()
+    {
+        return $this->belongsTo(Tambak::class, 'id_tambak', 'id_tambak');
+    }
 }
