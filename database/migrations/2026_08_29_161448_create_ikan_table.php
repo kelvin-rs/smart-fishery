@@ -11,15 +11,17 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('ikan', function (Blueprint $table) {
-            $table->id();
-            $table->string('id_tambak', 50)->nullable();
-            $table->timestamp('waktu')->nullable();
-            $table->integer('ph')->nullable();
-            $table->integer('suhu')->nullable();
-            $table->string('jenis_ikan', 50)->nullable();
-            $table->timestamps();
-        });
+        if (!Schema::hasTable('ikan')) {
+            Schema::create('ikan', function (Blueprint $table) {
+                $table->id();
+                $table->string('id_tambak', 50)->nullable();
+                $table->timestamp('waktu')->nullable();
+                $table->decimal('ph', 8, 2)->nullable();
+                $table->decimal('suhu', 8, 2)->nullable();
+                $table->string('jenis_ikan', 50)->nullable();
+                $table->timestamps();
+            });
+        }
     }
 
     /**

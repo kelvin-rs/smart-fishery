@@ -11,15 +11,18 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('tambak', function (Blueprint $table) {
-            $table->id();
-            $table->string('id_tambak', 50)->nullable();
-            $table->string('alamat', 100)->nullable();
-            $table->integer('banyak_benih')->nullable();
-            $table->string('jenis_ikan', 50)->nullable();
-            $table->integer('nomer')->nullable();
-            $table->timestamps();
-        });
+        if (!Schema::hasTable('tambak')) {
+            Schema::create('tambak', function (Blueprint $table) {
+                $table->id();
+                $table->string('id_tambak', 50)->nullable();
+                $table->string('alamat', 100)->nullable();
+                $table->integer('banyak_benih')->nullable();
+                $table->string('jenis_ikan', 50)->nullable();
+                $table->integer('nomor')->nullable();
+                $table->integer('nomer')->nullable();
+                $table->timestamps();
+            });
+        }
     }
 
     /**

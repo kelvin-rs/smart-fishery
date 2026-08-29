@@ -11,12 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('kud', function (Blueprint $table) {
-            $table->id();
-            $table->string('jenis_ikan', 50)->nullable();
-            $table->integer('harga')->nullable();
-            $table->timestamps();
-        });
+        if (!Schema::hasTable('kud')) {
+            Schema::create('kud', function (Blueprint $table) {
+                $table->id();
+                $table->string('jenis_ikan', 50)->nullable();
+                $table->integer('harga')->nullable();
+                $table->timestamps();
+            });
+        }
     }
 
     /**

@@ -11,12 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('prediksi', function (Blueprint $table) {
-            $table->id('id_hasil');
-            $table->string('id_tambak', 50)->nullable();
-            $table->integer('prediksi')->nullable();
-            $table->timestamps();
-        });
+        if (!Schema::hasTable('prediksi')) {
+            Schema::create('prediksi', function (Blueprint $table) {
+                $table->id('id_hasil');
+                $table->string('id_tambak', 50)->nullable();
+                $table->string('prediksi', 100)->nullable();
+                $table->timestamps();
+            });
+        }
     }
 
     /**

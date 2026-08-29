@@ -7,9 +7,19 @@ use Illuminate\Database\Eloquent\Model;
 class Timbangan extends Model
 {
     protected $table = 'timbangan';
+    public $timestamps = false;
+
+    protected $fillable = [
+        'id',
+        'id_tambak',
+        'tanggal_panen',
+        'banyak_panen',
+        'jenis_ikan',
+        'total',
+    ];
 
     public function tambak()
     {
-        return $this->belongsTo(Tambak::class, 'id_tambak', 'id_tambak');
+        return $this->belongsTo(Tambak::class, 'id_tambak', 'id');
     }
 }

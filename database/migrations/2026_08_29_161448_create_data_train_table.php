@@ -11,14 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('data_train', function (Blueprint $table) {
-            $table->id('no_train');
-            $table->string('ph', 20)->nullable();
-            $table->string('suhu', 20)->nullable();
-            $table->string('kesehatan', 20)->nullable();
-            $table->string('ket', 20)->nullable();
-            $table->timestamps();
-        });
+        if (!Schema::hasTable('data_train')) {
+            Schema::create('data_train', function (Blueprint $table) {
+                $table->id('no_train');
+                $table->string('ph', 20)->nullable();
+                $table->string('suhu', 20)->nullable();
+                $table->string('kesehatan', 20)->nullable();
+                $table->string('ket', 20)->nullable();
+                $table->timestamps();
+            });
+        }
     }
 
     /**

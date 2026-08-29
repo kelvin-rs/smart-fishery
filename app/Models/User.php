@@ -19,9 +19,11 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $fillable = [
-        'name',
+        'username',
+        'id_tambak',
         'email',
         'password',
+        'role',
     ];
 
     /**
@@ -45,6 +47,16 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function isPetambak(): bool
+    {
+        return $this->role === 'petambak';
+    }
+
+    public function isKud(): bool
+    {
+        return $this->role === 'kud';
     }
 
     public function tambak()
