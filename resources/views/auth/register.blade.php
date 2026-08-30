@@ -52,6 +52,9 @@
             <div class="input-group">
                 <span class="input-group-text"><i class="bi bi-lock"></i></span>
                 <input type="password" id="password" name="password" class="form-control" placeholder="Min. 6 karakter" required>
+                <button class="btn btn-toggle-password" type="button" onclick="toggleVisibility('password', 'togglePasswordIcon1')" aria-label="Tampilkan / Sembunyikan Kata Sandi">
+                    <i class="bi bi-eye" id="togglePasswordIcon1"></i>
+                </button>
             </div>
         </div>
         <div class="col-md-6">
@@ -59,6 +62,9 @@
             <div class="input-group">
                 <span class="input-group-text"><i class="bi bi-shield-check"></i></span>
                 <input type="password" id="password_confirmation" name="password_confirmation" class="form-control" placeholder="Konfirmasi sandi" required>
+                <button class="btn btn-toggle-password" type="button" onclick="toggleVisibility('password_confirmation', 'togglePasswordIcon2')" aria-label="Tampilkan / Sembunyikan Konfirmasi Sandi">
+                    <i class="bi bi-eye" id="togglePasswordIcon2"></i>
+                </button>
             </div>
         </div>
     </div>
@@ -82,5 +88,22 @@
         }
     }
     toggleTambakField(document.getElementById('role').value);
+
+    function toggleVisibility(inputId, iconId) {
+        const input = document.getElementById(inputId);
+        const icon = document.getElementById(iconId);
+        if (input && icon) {
+            const isPassword = input.getAttribute('type') === 'password';
+            input.setAttribute('type', isPassword ? 'text' : 'password');
+            if (isPassword) {
+                icon.classList.remove('bi-eye');
+                icon.classList.add('bi-eye-slash');
+            } else {
+                icon.classList.remove('bi-eye-slash');
+                icon.classList.add('bi-eye');
+            }
+        }
+    }
 </script>
 @endsection
+

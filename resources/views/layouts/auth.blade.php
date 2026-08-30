@@ -81,12 +81,61 @@
         .input-group-text {
             background-color: #f8fafc;
             border-color: #cbd5e1;
-            border-radius: 0.65rem 0 0 0.65rem;
+            border-top-left-radius: 0.65rem;
+            border-bottom-left-radius: 0.65rem;
             color: #64748b;
         }
         
-        .input-group .form-control {
-            border-radius: 0 0.65rem 0.65rem 0;
+        .input-group .form-control:not(:last-child) {
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+        }
+
+        .input-group .form-control:last-child {
+            border-top-right-radius: 0.65rem;
+            border-bottom-right-radius: 0.65rem;
+        }
+
+        .btn-toggle-password {
+            background-color: #f8fafc;
+            border: 1px solid #cbd5e1;
+            color: #64748b;
+            border-top-right-radius: 0.65rem !important;
+            border-bottom-right-radius: 0.65rem !important;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.7rem 0.9rem;
+            cursor: pointer;
+        }
+
+        .btn-toggle-password:hover, .btn-toggle-password:focus {
+            background-color: #e2e8f0;
+            border-color: #cbd5e1;
+            color: #0f172a;
+            box-shadow: none;
+        }
+
+        .auth-feature-item {
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+        }
+
+        .auth-feature-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 0.65rem;
+            background: rgba(255, 255, 255, 0.18);
+            border: 1px solid rgba(255, 255, 255, 0.28);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.15rem;
+            color: #ffffff;
+            flex-shrink: 0;
+            backdrop-filter: blur(4px);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
         }
     </style>
 </head>
@@ -107,23 +156,23 @@
                             </p>
 
                             <div class="d-flex flex-column gap-3 mt-4">
-                                <div class="d-flex align-items-center gap-3">
-                                    <div class="rounded-3 bg-white bg-opacity-20 p-2 text-center" style="width: 36px; height: 36px;">
-                                        <i class="bi bi-speedometer2"></i>
+                                <div class="auth-feature-item">
+                                    <div class="auth-feature-icon">
+                                        <i class="bi bi-droplet-half"></i>
                                     </div>
-                                    <span class="small">Monitoring Kualitas Air Harian</span>
+                                    <span class="small fw-medium">Monitoring Kualitas Air Harian</span>
                                 </div>
-                                <div class="d-flex align-items-center gap-3">
-                                    <div class="rounded-3 bg-white bg-opacity-20 p-2 text-center" style="width: 36px; height: 36px;">
-                                        <i class="bi bi-calculator"></i>
+                                <div class="auth-feature-item">
+                                    <div class="auth-feature-icon">
+                                        <i class="bi bi-graph-up-arrow"></i>
                                     </div>
-                                    <span class="small">Prediksi Panen & Klasifikasi Tambak</span>
+                                    <span class="small fw-medium">Prediksi Panen & Klasifikasi Tambak</span>
                                 </div>
-                                <div class="d-flex align-items-center gap-3">
-                                    <div class="rounded-3 bg-white bg-opacity-20 p-2 text-center" style="width: 36px; height: 36px;">
+                                <div class="auth-feature-item">
+                                    <div class="auth-feature-icon">
                                         <i class="bi bi-shop"></i>
                                     </div>
-                                    <span class="small">Integrasi Data Penjualan KUD</span>
+                                    <span class="small fw-medium">Integrasi Data Penjualan KUD</span>
                                 </div>
                             </div>
                         </div>

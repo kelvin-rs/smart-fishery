@@ -24,6 +24,9 @@
         <div class="input-group">
             <span class="input-group-text"><i class="bi bi-lock"></i></span>
             <input type="password" id="password" name="password" class="form-control" placeholder="••••••••" required>
+            <button class="btn btn-toggle-password" type="button" id="togglePassword" aria-label="Tampilkan / Sembunyikan Kata Sandi">
+                <i class="bi bi-eye" id="togglePasswordIcon"></i>
+            </button>
         </div>
     </div>
 
@@ -43,4 +46,28 @@
         Belum memiliki akun? <a href="{{ route('register') }}" class="text-decoration-none fw-semibold text-primary">Daftar Akun Baru</a>
     </div>
 </form>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const toggleBtn = document.getElementById('togglePassword');
+        const passwordInput = document.getElementById('password');
+        const icon = document.getElementById('togglePasswordIcon');
+
+        if (toggleBtn && passwordInput && icon) {
+            toggleBtn.addEventListener('click', function () {
+                const isPassword = passwordInput.getAttribute('type') === 'password';
+                passwordInput.setAttribute('type', isPassword ? 'text' : 'password');
+                
+                if (isPassword) {
+                    icon.classList.remove('bi-eye');
+                    icon.classList.add('bi-eye-slash');
+                } else {
+                    icon.classList.remove('bi-eye-slash');
+                    icon.classList.add('bi-eye');
+                }
+            });
+        }
+    });
+</script>
 @endsection
+
