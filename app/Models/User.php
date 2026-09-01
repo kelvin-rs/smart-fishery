@@ -61,6 +61,11 @@ class User extends Authenticatable
 
     public function tambak()
     {
-        return $this->belongsTo(Tambak::class, 'id_tambak', 'id_tambak');
+        return $this->belongsTo(Tambak::class, 'id_tambak', 'id');
+    }
+
+    public function tambaks()
+    {
+        return $this->hasMany(Tambak::class, 'user_id', 'id');
     }
 }

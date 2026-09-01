@@ -13,7 +13,10 @@ class HasilPanenController extends Controller
     public function index()
     {
         $user = Auth::user();
-        $harvests = Timbangan::all();
+        $harvests = Timbangan::where('user_id', $user->id)
+            ->orWhere('id_tambak', $user->id_tambak)
+            ->orderBy('id', 'desc')
+            ->get();
         $kudPrices = Kud::all()->pluck('harga', 'jenis_ikan')->toArray();
 
         return view('petambak.panen.index', compact('user', 'harvests', 'kudPrices'));
@@ -32,6 +35,7 @@ class HasilPanenController extends Controller
         $total = (int) round($request->banyak_panen * $hargaKg);
 
         Timbangan::create([
+            'user_id' => Auth::id(),
             'id_tambak' => $request->id_tambak,
             'tanggal_panen' => $request->tanggal_panen,
             'banyak_panen' => (int) $request->banyak_panen,

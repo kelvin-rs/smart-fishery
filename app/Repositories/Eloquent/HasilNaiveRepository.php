@@ -15,7 +15,7 @@ class HasilNaiveRepository implements HasilNaiveRepositoryInterface
 
     public function getLatest(int $limit = 10): Collection
     {
-        return HasilNaive::orderBy('id_hasil', 'desc')->take($limit)->get();
+        return HasilNaive::orderBy('id', 'desc')->take($limit)->get();
     }
 
     public function create(array $data): HasilNaive

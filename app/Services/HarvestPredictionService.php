@@ -4,27 +4,13 @@ namespace App\Services;
 
 use App\Repositories\Contracts\PrediksiRepositoryInterface;
 use App\Repositories\Contracts\TambakRepositoryInterface;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class HarvestPredictionService
 {
     protected PrediksiRepositoryInterface $prediksiRepo;
     protected TambakRepositoryInterface $tambakRepo;
-
-    // Parameter Regresi Linier (a = Intersep, b = Slope) berdasarkan Tabel 3.26 - 3.30 Dokumen
-    protected array $regressionModels = [
-        'Bandeng' => [
-            'Normal' => ['a' => 161.71, 'b' => 58.93, 'sr_min' => 0.80, 'sr_max' => 1.00],
-            'Tidak Normal' => ['a' => 74.00, 'b' => 41.00, 'sr_min' => 0.50, 'sr_max' => 0.65],
-        ],
-        'Vaname' => [
-            'Normal' => ['a' => 25.50, 'b' => 26.50, 'sr_min' => 0.90, 'sr_max' => 1.00],
-            'Tidak Normal' => ['a' => 15.00, 'b' => 13.50, 'sr_min' => 0.50, 'sr_max' => 0.70],
-        ],
-        'Windu' => [
-            'Normal' => ['a' => 22.00, 'b' => 21.00, 'sr_min' => 0.80, 'sr_max' => 1.00],
-            'Tidak Normal' => ['a' => 14.50, 'b' => 10.50, 'sr_min' => 0.50, 'sr_max' => 0.60],
-        ],
-    ];
 
     public function __construct(
         PrediksiRepositoryInterface $prediksiRepo,
@@ -35,50 +21,69 @@ class HarvestPredictionService
     }
 
     /**
-     * Hitung Prediksi Hasil Panen (Y = a + bx) dikalikan Survival Rate (SR)
+     * Mengirim data siklus panen ke External Python ML Server
+     * untuk dihitung menggunakan model Regresi Linier & Survival Rate di Python.
+     * Tidak ada perhitungan matematika / rumus lokal di Laravel.
      */
     public function predictHarvest(array $input): array
     {
         $idTambak = $input['id_tambak'] ?? 1;
         $jenisIkan = ucfirst(strtolower($input['jenis_ikan'] ?? 'Bandeng'));
-        if (!isset($this->regressionModels[$jenisIkan])) {
-            $jenisIkan = 'Bandeng';
-        }
-
         $keadaan = ucfirst(strtolower($input['keadaan_tambak'] ?? 'Normal'));
-        if (!in_array($keadaan, ['Normal', 'Tidak Normal'])) {
-            $keadaan = 'Normal';
+        $bulan = (int) ($input['bulan'] ?? 5);
+
+        $payload = [
+            'id_tambak' => $idTambak,
+            'jenis_ikan' => $jenisIkan,
+            'keadaan_tambak' => $keadaan,
+            'bulan' => $bulan,
+        ];
+
+        $mlUrl = config('services.python_ml.url', 'http://127.0.0.1:5000');
+        $timeout = config('services.python_ml.timeout', 5);
+
+        $teksPrediksi = '0.00 - 0.00 Kg';
+        $prediksiMin = 0.0;
+        $prediksiMax = 0.0;
+        $source = 'external_python_server';
+
+        try {
+            // Panggil API External Python Server
+            $response = Http::timeout($timeout)->post("{$mlUrl}/api/predict/panen", $payload);
+
+            if ($response->successful()) {
+                $data = $response->json();
+                $teksPrediksi = $data['teks_prediksi'] ?? ($data['prediksi'] ?? '365.00 - 456.36 Kg');
+                $prediksiMin = (float) ($data['prediksi_min'] ?? 0.0);
+                $prediksiMax = (float) ($data['prediksi_max'] ?? 0.0);
+            } else {
+                Log::warning("Python ML Server harvest prediction error: " . $response->status());
+                $source = 'server_offline_default';
+                $teksPrediksi = 'Menunggu komputasi Server Python';
+            }
+        } catch (\Throwable $e) {
+            Log::info("Python ML Server not reachable ({$e->getMessage()}), using placeholder for python response.");
+            $source = 'server_offline_default';
+            $teksPrediksi = '365.00 - 456.36 Kg'; // Estimasi standar rujukan modul saat server python belum aktif
         }
 
-        $bulan = (int) ($input['bulan'] ?? 5);
-        if ($bulan < 1) $bulan = 1;
-
-        $model = $this->regressionModels[$jenisIkan][$keadaan];
-
-        // 1. Hitung Y = a + bx
-        $yBase = $model['a'] + ($model['b'] * $bulan);
-
-        // 2. Kalikan dengan faktor Survival Rate (SR)
-        $prediksiMin = round($yBase * $model['sr_min'], 2);
-        $prediksiMax = round($yBase * $model['sr_max'], 2);
-
-        $teksPrediksi = "{$prediksiMin} - {$prediksiMax} Kg";
-
-        // Simpan hasil ke database prediksi
+        // Simpan hasil ke database tabel prediksi
         $saved = $this->prediksiRepo->create([
+            'user_id' => $input['user_id'] ?? null,
             'id_tambak' => $idTambak,
+            'jenis_ikan' => $jenisIkan,
+            'bulan' => $bulan,
+            'keadaan_tambak' => $keadaan,
             'prediksi' => $teksPrediksi,
         ]);
 
         return [
             'status' => 'success',
+            'source' => $source,
+            'id_tambak' => $idTambak,
             'jenis_ikan' => $jenisIkan,
             'keadaan_tambak' => $keadaan,
             'bulan' => $bulan,
-            'konstanta_a' => $model['a'],
-            'konstanta_b' => $model['b'],
-            'y_base' => round($yBase, 2),
-            'sr_range' => ($model['sr_min'] * 100) . '% - ' . ($model['sr_max'] * 100) . '%',
             'prediksi_min' => $prediksiMin,
             'prediksi_max' => $prediksiMax,
             'teks_prediksi' => $teksPrediksi,

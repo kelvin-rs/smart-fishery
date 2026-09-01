@@ -20,7 +20,7 @@ class TambakRepository implements TambakRepositoryInterface
 
     public function findByIdTambak(string $idTambak): ?Tambak
     {
-        return Tambak::where('id_tambak', $idTambak)->first();
+        return Tambak::where('id', $idTambak)->first();
     }
 
     public function create(array $data): Tambak

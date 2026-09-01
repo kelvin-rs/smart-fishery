@@ -34,6 +34,7 @@ Route::middleware(['auth', 'role:petambak'])->prefix('petambak')->name('petambak
     // Data Tambak
     Route::get('/tambak', [PetambakTambakController::class, 'index'])->name('tambak.index');
     Route::post('/tambak', [PetambakTambakController::class, 'store'])->name('tambak.store');
+    Route::delete('/tambak/{id}', [PetambakTambakController::class, 'destroy'])->name('tambak.destroy');
 
     // Cek Kualitas Air (Gaussian Naive Bayes)
     Route::get('/kualitas-air', [PetambakKualitasAirController::class, 'index'])->name('kualitas-air.index');
@@ -47,9 +48,13 @@ Route::middleware(['auth', 'role:petambak'])->prefix('petambak')->name('petambak
     Route::get('/hasil-panen', [PetambakHasilPanenController::class, 'index'])->name('panen.index');
     Route::post('/hasil-panen', [PetambakHasilPanenController::class, 'store'])->name('panen.store');
 
-    // Tambah Sumber Data (Dataset Import)
+    // Tambah Sumber Data (Dataset Database)
     Route::get('/dataset', [PetambakDatasetController::class, 'index'])->name('dataset.index');
     Route::post('/dataset/upload', [PetambakDatasetController::class, 'upload'])->name('dataset.upload');
+
+    // Profile & Pengaturan Akun
+    Route::get('/profile', [\App\Http\Controllers\ProfileController::class, 'edit'])->name('profile.edit');
+    Route::put('/profile', [\App\Http\Controllers\ProfileController::class, 'update'])->name('profile.update');
 });
 
 // Protected Routes: KUD
@@ -62,4 +67,8 @@ Route::middleware(['auth', 'role:kud'])->prefix('kud')->name('kud.')->group(func
 
     // Rekapitulasi Hasil Panen Petambak
     Route::get('/rekap-panen', [KudHasilPanenController::class, 'index'])->name('panen.index');
+
+    // Profile & Pengaturan Akun KUD
+    Route::get('/profile', [\App\Http\Controllers\ProfileController::class, 'editKud'])->name('profile.edit');
+    Route::put('/profile', [\App\Http\Controllers\ProfileController::class, 'updateKud'])->name('profile.update');
 });

@@ -11,11 +11,18 @@ class Tambak extends Model
 
     protected $fillable = [
         'id',
+        'id_tambak',
+        'user_id',
         'alamat',
         'banyak_benih',
         'jenis_ikan',
         'nomor',
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
 
     public function timbangan()
     {

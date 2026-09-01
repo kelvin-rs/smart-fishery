@@ -19,8 +19,27 @@ class KualitasAirController extends Controller
 
     public function index()
     {
-        $history = HasilNaive::orderBy('id', 'desc')->take(10)->get();
-        $tambaks = Tambak::all();
+        $user = \Illuminate\Support\Facades\Auth::user();
+        $history = HasilNaive::where(function($q) use ($user) {
+                if ($user) {
+                    $q->where('user_id', $user->id)
+                      ->orWhereNull('user_id');
+                }
+            })
+            ->orderBy('id', 'desc')
+            ->take(10)
+            ->get();
+        $tambaks = Tambak::where(function($q) use ($user) {
+                if ($user) {
+                    $q->where('user_id', $user->id)
+                      ->orWhere('id', $user->id_tambak);
+                }
+            })
+            ->get();
+
+        if ($tambaks->isEmpty()) {
+            $tambaks = Tambak::all();
+        }
 
         return view('petambak.kualitas-air.index', compact('history', 'tambaks'));
     }
@@ -35,7 +54,10 @@ class KualitasAirController extends Controller
             'jenis_ikan' => 'required|in:Bandeng,Vaname,Windu',
         ]);
 
-        $hasil = $this->nbService->predict($request->all());
+        $params = $request->all();
+        $params['user_id'] = \Illuminate\Support\Facades\Auth::id();
+
+        $hasil = $this->nbService->predict($params);
 
         return redirect()->route('petambak.kualitas-air.index')
             ->with('hasil_uji', $hasil)

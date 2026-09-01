@@ -6,7 +6,7 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
         <h4 class="fw-bold text-dark mb-1">Prediksi Potensi Hasil Panen</h4>
-        <p class="text-muted small mb-0">Estimasi bobot panen (Kg) menggunakan model Regresi Linier dan faktor Survival Rate (SR).</p>
+        <p class="text-muted small mb-0">Estimasi bobot panen (Kg) via External Python ML Server (Model Regresi Linier & SR).</p>
     </div>
 </div>
 
@@ -17,7 +17,7 @@
             <h5 class="fw-bold text-dark mb-3">
                 <i class="bi bi-calculator text-primary me-1"></i> Form Prediksi Panen
             </h5>
-            <p class="text-muted small mb-4">Lengkapi data siklus budidaya untuk menghitung proyeksi panen.</p>
+            <p class="text-muted small mb-4">Lengkapi data siklus budidaya untuk dikirim ke Server Python.</p>
 
             <form action="{{ route('petambak.prediksi.proses') }}" method="POST">
                 @csrf
@@ -67,7 +67,7 @@
                 </div>
 
                 <button type="submit" class="btn btn-primary w-100 py-2.5 rounded-3 fw-semibold">
-                    <i class="bi bi-lightning-charge me-1"></i> Hitung Estimasi Panen
+                    <i class="bi bi-send me-1"></i> Hitung via Server Python
                 </button>
             </form>
         </div>
@@ -103,16 +103,10 @@
                             <strong class="text-dark">{{ $res['keadaan_tambak'] }}</strong>
                         </div>
                     </div>
-                    <div class="col-6">
+                    <div class="col-12">
                         <div class="p-2.5 bg-light rounded-2 border">
-                            <span class="text-muted d-block">Rumus Regresi:</span>
-                            <span class="fw-semibold">Y = {{ $res['konstanta_a'] }} + {{ $res['konstanta_b'] }}x</span>
-                        </div>
-                    </div>
-                    <div class="col-6">
-                        <div class="p-2.5 bg-light rounded-2 border">
-                            <span class="text-muted d-block">Faktor SR:</span>
-                            <span class="fw-semibold">{{ $res['sr_range'] }}</span>
+                            <span class="text-muted d-block">Sumber Komputasi:</span>
+                            <span class="fw-semibold text-dark">{{ $res['source'] ?? 'Python ML Server' }}</span>
                         </div>
                     </div>
                 </div>
@@ -151,4 +145,47 @@
         </div>
     </div>
 </div>
+@endsection
+
+@section('scripts')
+@if(session('hasil_prediksi'))
+@php $hpred = session('hasil_prediksi'); @endphp
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        Swal.fire({
+            icon: 'success',
+            title: 'Prediksi Bobot Panen',
+            html: `
+                <div class="text-start p-3 bg-light rounded-3 border mt-2">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span class="text-muted">Unit Tambak:</span>
+                        <strong>Tambak #{{ $hpred['id_tambak'] }}</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mb-1">
+                        <span class="text-muted">Komoditas & Siklus:</span>
+                        <strong>{{ $hpred['jenis_ikan'] }} (Bulan ke-{{ $hpred['bulan'] }})</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Kondisi Tambak:</span>
+                        <span class="badge text-bg-info-subtle text-info-emphasis">{{ $hpred['keadaan_tambak'] }}</span>
+                    </div>
+                    <hr class="my-2">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="text-muted fw-bold">Estimasi Bobot:</span>
+                        <strong class="text-success fs-5">{{ $hpred['teks_prediksi'] }}</strong>
+                    </div>
+                </div>
+            `,
+            confirmButtonColor: '#0284c7',
+            confirmButtonText: '<i class="bi bi-check2"></i> Selesai',
+            showClass: {
+                popup: 'animate__animated animate__bounceIn'
+            },
+            hideClass: {
+                popup: 'animate__animated animate__fadeOutDown'
+            }
+        });
+    });
+</script>
+@endif
 @endsection

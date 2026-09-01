@@ -35,4 +35,9 @@ return [
         ],
     ],
 
+    'python_ml' => [
+        'url' => env('PYTHON_ML_URL', 'http://127.0.0.1:5000'),
+        'timeout' => env('PYTHON_ML_TIMEOUT', 5),
+    ],
+
 ];

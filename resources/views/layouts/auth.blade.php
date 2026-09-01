@@ -3,220 +3,261 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'Autentikasi') - Smart Fishery</title>
+    <title>@yield('title', 'Autentikasi') - Smart Fishery Village</title>
     
-    <!-- Google Fonts (Plus Jakarta Sans) -->
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
     <!-- Bootstrap 5.3 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     
     <style>
+        :root {
+            --sf-primary: #0284c7;
+            --sf-primary-dark: #0369a1;
+            --sf-accent: #06b6d4;
+        }
+
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: #f1f5f9;
+            background: linear-gradient(135deg, #091e3a 0%, #0c2b4e 50%, #0369a1 100%);
             color: #1e293b;
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
+            padding: 1.5rem;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Ambient Glow Background Effect */
+        body::before {
+            content: '';
+            position: absolute;
+            width: 450px;
+            height: 450px;
+            background: radial-gradient(circle, rgba(6, 182, 212, 0.25) 0%, rgba(6, 182, 212, 0) 70%);
+            top: 10%;
+            left: 15%;
+            z-index: 0;
+            filter: blur(40px);
+            pointer-events: none;
+        }
+
+        body::after {
+            content: '';
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.25) 0%, rgba(99, 102, 241, 0) 70%);
+            bottom: 10%;
+            right: 15%;
+            z-index: 0;
+            filter: blur(40px);
+            pointer-events: none;
         }
         
-        .auth-wrapper {
+        .auth-container {
             width: 100%;
-            max-width: 960px;
-            margin: auto;
+            max-width: 1000px;
+            position: relative;
+            z-index: 1;
         }
 
         .auth-card {
-            border-radius: 1.25rem;
-            border: 1px solid #e2e8f0;
+            border-radius: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
             overflow: hidden;
-            box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.08), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
             background: #ffffff;
         }
 
         .auth-side-banner {
-            background: linear-gradient(160deg, #0c4a6e 0%, #0369a1 60%, #0284c7 100%);
+            background: linear-gradient(150deg, #0c2b4e 0%, #0369a1 60%, #0284c7 100%);
             color: #ffffff;
-            padding: 3rem 2.5rem;
+            padding: 3.5rem 3rem;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
+            position: relative;
+        }
+
+        .auth-side-banner::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        .auth-form-side {
+            padding: 3.5rem 3rem;
+            background: #ffffff;
+        }
+
+        .brand-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.5rem 1rem;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            border-radius: 2rem;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #ffffff;
         }
 
         .form-control, .form-select {
-            border-radius: 0.65rem;
-            padding: 0.7rem 1rem;
-            border-color: #cbd5e1;
+            border-radius: 0.75rem;
+            padding: 0.75rem 1rem;
+            border-color: #e2e8f0;
             font-size: 0.95rem;
+            background-color: #f8fafc;
+            transition: all 0.2s ease;
         }
 
         .form-control:focus, .form-select:focus {
             border-color: #0284c7;
-            box-shadow: 0 0 0 0.25rem rgba(2, 132, 199, 0.15);
-        }
-
-        .btn-primary-custom {
-            background-color: #0284c7;
-            border-color: #0284c7;
-            color: #ffffff;
-            border-radius: 0.65rem;
-            padding: 0.75rem 1.5rem;
-            font-weight: 600;
-            transition: all 0.2s ease;
-        }
-
-        .btn-primary-custom:hover {
-            background-color: #0369a1;
-            border-color: #0369a1;
-            color: #ffffff;
+            background-color: #ffffff;
+            box-shadow: 0 0 0 4px rgba(2, 132, 199, 0.12);
         }
 
         .input-group-text {
             background-color: #f8fafc;
-            border-color: #cbd5e1;
-            border-top-left-radius: 0.65rem;
-            border-bottom-left-radius: 0.65rem;
+            border-color: #e2e8f0;
+            border-top-left-radius: 0.75rem;
+            border-bottom-left-radius: 0.75rem;
             color: #64748b;
-        }
-        
-        .input-group .form-control:not(:last-child) {
-            border-top-right-radius: 0;
-            border-bottom-right-radius: 0;
-        }
-
-        .input-group .form-control:last-child {
-            border-top-right-radius: 0.65rem;
-            border-bottom-right-radius: 0.65rem;
+            padding-left: 1rem;
+            padding-right: 0.85rem;
         }
 
         .btn-toggle-password {
             background-color: #f8fafc;
-            border: 1px solid #cbd5e1;
+            border-color: #e2e8f0;
             color: #64748b;
-            border-top-right-radius: 0.65rem !important;
-            border-bottom-right-radius: 0.65rem !important;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0.7rem 0.9rem;
-            cursor: pointer;
+            border-top-right-radius: 0.75rem;
+            border-bottom-right-radius: 0.75rem;
         }
 
-        .btn-toggle-password:hover, .btn-toggle-password:focus {
-            background-color: #e2e8f0;
-            border-color: #cbd5e1;
-            color: #0f172a;
-            box-shadow: none;
-        }
-
-        .auth-feature-item {
-            display: flex;
-            align-items: center;
-            gap: 0.85rem;
-        }
-
-        .auth-feature-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 0.65rem;
-            background: rgba(255, 255, 255, 0.18);
-            border: 1px solid rgba(255, 255, 255, 0.28);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.15rem;
+        .btn-primary-custom {
+            background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+            border: none;
             color: #ffffff;
-            flex-shrink: 0;
-            backdrop-filter: blur(4px);
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+            border-radius: 0.75rem;
+            padding: 0.85rem 1.5rem;
+            font-weight: 700;
+            font-size: 0.95rem;
+            box-shadow: 0 4px 14px rgba(2, 132, 199, 0.3);
+            transition: all 0.25s ease;
+        }
+
+        .btn-primary-custom:hover {
+            background: linear-gradient(135deg, #0369a1 0%, #0c4a6e 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(2, 132, 199, 0.4);
+            color: #ffffff;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .feature-item i {
+            font-size: 1.15rem;
+            color: #38bdf8;
+        }
+
+        @media (max-width: 768px) {
+            .auth-form-side {
+                padding: 2.25rem 1.5rem;
+            }
+            .auth-side-banner {
+                padding: 2.25rem 1.5rem;
+            }
         }
     </style>
+    @yield('styles')
 </head>
 <body>
-    <div class="container py-4">
-        <div class="auth-wrapper">
-            <div class="card auth-card">
-                <div class="row g-0">
-                    <!-- Banner Informasi (Kiri) -->
-                    <div class="col-lg-5 d-none d-lg-block auth-side-banner">
-                        <div>
-                            <div class="d-inline-flex align-items-center gap-2 px-3 py-1.5 rounded-pill bg-white bg-opacity-20 text-white small fw-semibold mb-4">
-                                <i class="bi bi-water"></i> Smart Fishery System
-                            </div>
-                            <h3 class="fw-bold lh-sm mb-3">Sistem Informasi Pertambakan & KUD</h3>
-                            <p class="text-light opacity-75 small lh-base mb-4">
-                                Platform digitalisasi pengelolaan tambak ikan bandeng, udang vaname, dan udang windu terintegrasi Koperasi Unit Desa.
-                            </p>
 
-                            <div class="d-flex flex-column gap-3 mt-4">
-                                <div class="auth-feature-item">
-                                    <div class="auth-feature-icon">
-                                        <i class="bi bi-droplet-half"></i>
-                                    </div>
-                                    <span class="small fw-medium">Monitoring Kualitas Air Harian</span>
-                                </div>
-                                <div class="auth-feature-item">
-                                    <div class="auth-feature-icon">
-                                        <i class="bi bi-graph-up-arrow"></i>
-                                    </div>
-                                    <span class="small fw-medium">Prediksi Panen & Klasifikasi Tambak</span>
-                                </div>
-                                <div class="auth-feature-item">
-                                    <div class="auth-feature-icon">
-                                        <i class="bi bi-shop"></i>
-                                    </div>
-                                    <span class="small fw-medium">Integrasi Data Penjualan KUD</span>
-                                </div>
-                            </div>
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="row g-0">
+                <!-- Sisi Kiri / Banner Deskripsi -->
+                <div class="col-lg-5 auth-side-banner">
+                    <div>
+                        <div class="brand-pill mb-4">
+                            <i class="bi bi-water"></i> Smart Fishery Village
                         </div>
+                        <h2 class="fw-bold mb-3">Sistem Informasi Pertambakan</h2>
+                        <p class="text-white-50 small mb-4" style="line-height: 1.7;">
+                            Platform terintegrasi petambak ikan dan Koperasi Unit Desa (KUD) untuk monitoring lingkungan air, estimasi panen, dan tata kelola hasil panen.
+                        </p>
 
-                        <div class="mt-4 pt-3 border-top border-white border-opacity-20 small text-light opacity-75">
-                            &copy; {{ date('Y') }} Politeknik Elektronika Negeri Surabaya (PENS)
+                        <div class="features-list d-none d-lg-block">
+                            <div class="feature-item">
+                                <i class="bi bi-check-circle-fill"></i>
+                                <span>Klasifikasi Kualitas Air (Naïve Bayes)</span>
+                            </div>
+                            <div class="feature-item">
+                                <i class="bi bi-check-circle-fill"></i>
+                                <span>Estimasi Tonase Panen (Regresi Linier)</span>
+                            </div>
+                            <div class="feature-item">
+                                <i class="bi bi-check-circle-fill"></i>
+                                <span>Sinkronisasi Transparansi Harga KUD</span>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Form Content (Kanan) -->
-                    <div class="col-lg-7 p-4 p-md-5 d-flex flex-column justify-content-center">
-                        @if (session('success'))
-                            <div class="alert alert-success alert-dismissible fade show rounded-3 small py-2.5" role="alert">
-                                <i class="bi bi-check-circle-fill me-1"></i> {{ session('success') }}
-                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                            </div>
-                        @endif
-
-                        @if ($errors->any())
-                            <div class="alert alert-danger alert-dismissible fade show rounded-3 small py-2.5" role="alert">
-                                <i class="bi bi-exclamation-triangle-fill me-1"></i>
-                                <ul class="mb-0 ps-3">
-                                    @foreach ($errors->all() as $error)
-                                        <li>{{ $error }}</li>
-                                    @endforeach
-                                </ul>
-                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                            </div>
-                        @endif
-
-                        @yield('content')
+                    <div class="mt-4 pt-3 border-top border-white-10 text-white-50 small">
+                        &copy; {{ date('Y') }} Smart Fishery. All Rights Reserved.
                     </div>
                 </div>
-            </div>
-            
-            <div class="text-center mt-3 small text-muted">
-                <a href="{{ route('home') }}" class="text-decoration-none text-muted">
-                    <i class="bi bi-arrow-left"></i> Kembali ke Halaman Utama
-                </a>
+
+                <!-- Sisi Kanan / Form Auth -->
+                <div class="col-lg-7 auth-form-side">
+                    <!-- Flash Message -->
+                    @if (session('status'))
+                        <div class="alert alert-success alert-dismissible fade show rounded-3 small py-2.5 mb-3" role="alert">
+                            {{ session('status') }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    @endif
+
+                    @if ($errors->any())
+                        <div class="alert alert-danger alert-dismissible fade show rounded-3 small py-2.5 mb-3" role="alert">
+                            <ul class="mb-0 ps-3">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    @endif
+
+                    @yield('content')
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Bootstrap 5.3 JS Bundle -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <!-- Bootstrap 5.3 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    @yield('scripts')
 </body>
 </html>

@@ -1,11 +1,11 @@
 @extends('layouts.petambak')
 
-@section('title', 'Informasi Hasil Panen')
+@section('title', 'Informasi')
 
 @section('content')
 <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
     <div>
-        <h4 class="fw-bold text-dark mb-1">Tabel Informasi Hasil Panen</h4>
+        <h4 class="fw-bold text-dark mb-1">Informasi Hasil Panen</h4>
         <p class="text-muted small mb-0">Catatan transaksi timbangan dan total pendapatan penjualan ke KUD.</p>
     </div>
 

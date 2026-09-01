@@ -19,7 +19,7 @@
             </h5>
             <p class="text-muted small mb-4">Harga yang diperbarui akan otomatis digunakan dalam kalkulasi pendapatan penjualan petambak.</p>
 
-            <form action="{{ route('kud.harga.update') }}" method="POST">
+            <form action="{{ route('kud.harga.update') }}" method="POST" id="formUpdateHarga" onsubmit="confirmUpdateHarga(event)">
                 @csrf
 
                 <div class="mb-3">
@@ -81,4 +81,49 @@
         </div>
     </div>
 </div>
+@endsection
+
+@section('scripts')
+<script>
+    function confirmUpdateHarga(event) {
+        event.preventDefault();
+        const form = event.target;
+        const komoditas = document.getElementById('jenis_ikan').value;
+        const harga = document.getElementById('harga').value;
+
+        if (!harga || harga < 1000) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Nilai Tidak Valid',
+                text: 'Harap masukkan nominal harga yang valid (minimal Rp 1.000).',
+                confirmButtonColor: '#4f46e5'
+            });
+            return;
+        }
+
+        const formatted = new Intl.NumberFormat('id-ID').format(harga);
+
+        Swal.fire({
+            title: 'Terapkan Harga Baru?',
+            text: `Perbarui harga ${komoditas} menjadi Rp ${formatted} / Kg untuk seluruh petambak?`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#4f46e5',
+            cancelButtonColor: '#94a3b8',
+            confirmButtonText: '<i class="bi bi-check-lg"></i> Ya, Terapkan',
+            cancelButtonText: 'Batal',
+            reverseButtons: true,
+            showClass: {
+                popup: 'animate__animated animate__zoomIn'
+            },
+            hideClass: {
+                popup: 'animate__animated animate__zoomOut'
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                form.submit();
+            }
+        });
+    }
+</script>
 @endsection

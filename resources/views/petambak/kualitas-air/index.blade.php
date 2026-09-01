@@ -6,7 +6,7 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
         <h4 class="fw-bold text-dark mb-1">Cek Kualitas Air Tambak</h4>
-        <p class="text-muted small mb-0">Klasifikasi status lingkungan tambak menggunakan algoritma Gaussian Naïve Bayes.</p>
+        <p class="text-muted small mb-0">Klasifikasi status lingkungan tambak via External Python ML Server (Gaussian Naïve Bayes).</p>
     </div>
 </div>
 
@@ -17,7 +17,7 @@
             <h5 class="fw-bold text-dark mb-3">
                 <i class="bi bi-droplet-half text-primary me-1"></i> Form Uji Parameter Air
             </h5>
-            <p class="text-muted small mb-4">Masukkan data kondisi air pada waktu pengukuran.</p>
+            <p class="text-muted small mb-4">Masukkan data kondisi air untuk dikirim ke Server Python.</p>
 
             <form action="{{ route('petambak.kualitas-air.proses') }}" method="POST">
                 @csrf
@@ -74,7 +74,7 @@
                 </div>
 
                 <button type="submit" class="btn btn-primary w-100 py-2.5 rounded-3 fw-semibold">
-                    <i class="bi bi-cpu me-1"></i> Analisis Naïve Bayes
+                    <i class="bi bi-send me-1"></i> Kirim ke Server ML Python
                 </button>
             </form>
         </div>
@@ -93,26 +93,22 @@
                 </div>
 
                 <p class="small text-secondary mb-3">
-                    Berdasarkan parameter pengukuran waktu <strong>{{ $hasil['waktu'] }}</strong> (Suhu: {{ $hasil['suhu'] }}°C, pH: {{ $hasil['ph'] }}), kondisi tambak disimpulkan:
+                    Berdasarkan respon Server Python untuk waktu <strong>{{ $hasil['waktu'] }}</strong> (Suhu: {{ $hasil['suhu'] }}°C, pH: {{ $hasil['ph'] }}), kondisi tambak dinyatakan:
                 </p>
 
-                <div class="row g-2 mb-3">
-                    <div class="col-6">
-                        <div class="p-3 bg-light rounded-3 border">
-                            <div class="small text-muted">Posterior Normal</div>
-                            <div class="fw-bold text-success">{{ sprintf('%.4e', $hasil['posterior_normal']) }}</div>
-                        </div>
+                <div class="p-3 bg-light rounded-3 border mb-3">
+                    <div class="d-flex justify-content-between small text-muted">
+                        <span>Sumber Komputasi:</span>
+                        <strong class="text-dark">{{ $hasil['source'] ?? 'Python ML Server' }}</strong>
                     </div>
-                    <div class="col-6">
-                        <div class="p-3 bg-light rounded-3 border">
-                            <div class="small text-muted">Posterior Tidak Normal</div>
-                            <div class="fw-bold text-danger">{{ sprintf('%.4e', $hasil['posterior_tidak']) }}</div>
-                        </div>
+                    <div class="d-flex justify-content-between small text-muted mt-1">
+                        <span>Status Kualitas:</span>
+                        <strong class="{{ $hasil['hasil_prediksi'] === 'Normal' ? 'text-success' : 'text-danger' }}">{{ $hasil['hasil_prediksi'] }}</strong>
                     </div>
                 </div>
 
                 <div class="small text-muted">
-                    <i class="bi bi-check-circle me-1 text-success"></i> Data hasil analisis telah tersimpan di sistem untuk referensi estimasi panen.
+                    <i class="bi bi-check-circle me-1 text-success"></i> Data respon klasifikasi telah tersimpan ke database.
                 </div>
             </div>
         @endif
@@ -154,7 +150,44 @@
                     </table>
                 </div>
             @endif
-        </div>
     </div>
 </div>
+@endsection
+
+@section('scripts')
+@if(session('hasil_uji'))
+@php $huji = session('hasil_uji'); @endphp
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        Swal.fire({
+            icon: '{{ $huji['hasil_prediksi'] === 'Normal' ? 'success' : 'warning' }}',
+            title: 'Hasil Klasifikasi: {{ $huji['hasil_prediksi'] }}',
+            html: `
+                <div class="text-start p-3 bg-light rounded-3 border mt-2">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span class="text-muted">Parameter Waktu:</span>
+                        <strong>{{ $huji['waktu'] }}</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mb-1">
+                        <span class="text-muted">Suhu / pH:</span>
+                        <strong>{{ $huji['suhu'] }}°C / pH {{ $huji['ph'] }}</strong>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span class="text-muted">Status Lingkungan:</span>
+                        <strong class="{{ $huji['hasil_prediksi'] === 'Normal' ? 'text-success' : 'text-danger' }}">{{ $huji['hasil_prediksi'] }}</strong>
+                    </div>
+                </div>
+            `,
+            confirmButtonColor: '#0284c7',
+            confirmButtonText: 'Tutup & Lihat Riwayat',
+            showClass: {
+                popup: 'animate__animated animate__bounceIn'
+            },
+            hideClass: {
+                popup: 'animate__animated animate__fadeOutDown'
+            }
+        });
+    });
+</script>
+@endif
 @endsection

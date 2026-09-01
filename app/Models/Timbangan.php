@@ -12,11 +12,17 @@ class Timbangan extends Model
     protected $fillable = [
         'id',
         'id_tambak',
+        'user_id',
         'tanggal_panen',
         'banyak_panen',
         'jenis_ikan',
         'total',
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
 
     public function tambak()
     {

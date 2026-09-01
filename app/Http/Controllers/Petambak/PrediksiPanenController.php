@@ -22,10 +22,30 @@ class PrediksiPanenController extends Controller
     public function index()
     {
         $user = Auth::user();
-        $tambaks = Tambak::all();
+        $tambaks = Tambak::where(function($q) use ($user) {
+                if ($user) {
+                    $q->where('user_id', $user->id)
+                      ->orWhere('id', $user->id_tambak);
+                }
+            })
+            ->get();
+
+        if ($tambaks->isEmpty()) {
+            $tambaks = Tambak::all();
+        }
+
         $latestKualitas = HasilNaive::orderBy('id', 'desc')->first();
         $statusKualitas = $latestKualitas->keterangan ?? 'Normal';
-        $history = Prediksi::with('tambak')->orderBy('id_hasil', 'desc')->take(10)->get();
+        $history = Prediksi::with('tambak')
+            ->where(function($q) use ($user) {
+                if ($user) {
+                    $q->where('user_id', $user->id)
+                      ->orWhereNull('user_id');
+                }
+            })
+            ->orderBy('id_hasil', 'desc')
+            ->take(10)
+            ->get();
 
         return view('petambak.prediksi.index', compact('user', 'tambaks', 'statusKualitas', 'history'));
     }
@@ -39,7 +59,10 @@ class PrediksiPanenController extends Controller
             'keadaan_tambak' => 'required|in:Normal,Tidak Normal',
         ]);
 
-        $hasil = $this->predictionService->predictHarvest($request->all());
+        $params = $request->all();
+        $params['user_id'] = Auth::id();
+
+        $hasil = $this->predictionService->predictHarvest($params);
 
         return redirect()->route('petambak.prediksi.index')
             ->with('hasil_prediksi', $hasil)
