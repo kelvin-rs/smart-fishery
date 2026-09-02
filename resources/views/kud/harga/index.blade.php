@@ -51,32 +51,34 @@
 
     <!-- Tabel Daftar Harga Saat Ini -->
     <div class="col-lg-7">
-        <div class="card card-custom p-4">
+        <div class="card card-custom p-4" id="liveHargaCard">
             <h5 class="fw-bold text-dark mb-3">
                 <i class="bi bi-tags text-info me-1"></i> Daftar Harga Pasar KUD Saat Ini
             </h5>
 
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light small text-secondary">
-                        <tr>
-                            <th>No</th>
-                            <th>Jenis Komoditas</th>
-                            <th>Harga Beli / Kg</th>
-                            <th>Status Pasar</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($prices as $idx => $p)
+            <div id="liveTableContainer">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light small text-secondary">
                             <tr>
-                                <td>{{ $idx + 1 }}</td>
-                                <td class="fw-bold text-dark">{{ $p->jenis_ikan }}</td>
-                                <td class="fw-bold text-success fs-6">Rp {{ number_format($p->harga, 0, ',', '.') }}</td>
-                                <td><span class="badge text-bg-success-subtle text-success">Aktif Berlaku</span></td>
+                                <th>No</th>
+                                <th>Jenis Komoditas</th>
+                                <th>Harga Beli / Kg</th>
+                                <th>Status Pasar</th>
                             </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            @foreach($prices as $idx => $p)
+                                <tr>
+                                    <td>{{ $idx + 1 }}</td>
+                                    <td class="fw-bold text-dark">{{ $p->jenis_ikan }}</td>
+                                    <td class="fw-bold text-success fs-6">Rp {{ number_format($p->harga, 0, ',', '.') }}</td>
+                                    <td><span class="badge text-bg-success-subtle text-success">Aktif Berlaku</span></td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>

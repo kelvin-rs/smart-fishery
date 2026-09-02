@@ -50,12 +50,21 @@
                     </div>
                 </div>
 
-                <div class="mb-4">
+                <div class="mb-3">
                     <label for="banyak_benih" class="form-label small fw-semibold text-secondary">Banyak Benih yang Ditebar (Ekor)</label>
                     <div class="input-group">
                         <span class="input-group-text"><i class="bi bi-layers"></i></span>
                         <input type="number" id="banyak_benih" name="banyak_benih" class="form-control" placeholder="Contoh: 5000" value="{{ old('banyak_benih', 5000) }}" required>
                     </div>
+                </div>
+
+                <div class="mb-4">
+                    <label for="luas_lahan" class="form-label small fw-semibold text-secondary">Luas Lahan Tambak (m²)</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-bounding-box-circles"></i></span>
+                        <input type="number" step="0.1" id="luas_lahan" name="luas_lahan" class="form-control" placeholder="Contoh: 800" value="{{ old('luas_lahan', 800) }}" required>
+                    </div>
+                    <div class="form-text small">Digunakan sebagai parameter model Machine Learning (Regresi Linier).</div>
                 </div>
 
                 <button type="submit" class="btn btn-primary w-100 py-2.5 rounded-3 fw-semibold shadow-sm">
@@ -68,58 +77,95 @@
     <!-- Tabel Daftar Tambak Milik Petambak -->
     <div class="col-lg-7">
         <div class="card card-custom p-4">
-            <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-3">
                 <h5 class="fw-bold text-dark mb-0">
                     <i class="bi bi-list-ul text-primary me-1"></i> Daftar Tambak Terdaftar
                 </h5>
-                <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2.5 py-1">
-                    {{ $tambaks->count() }} Kolam Aktif
+                <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2.5 py-1" id="tambakTotalBadge">
+                    {{ $tambaks->total() }} Kolam Aktif
                 </span>
             </div>
 
-            @if($tambaks->isEmpty())
-                <div class="p-4 text-center text-muted">
-                    <i class="bi bi-inbox fs-1 d-block mb-2 text-secondary opacity-50"></i>
-                    Belum ada data tambak terdaftar untuk akun Anda. Silakan tambahkan melalui form di samping.
+            <!-- Toolbar Filter & Search -->
+            <form action="{{ route('petambak.tambak.index') }}" method="GET" class="row g-2 mb-3">
+                <div class="col-sm-6">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text bg-light"><i class="bi bi-search"></i></span>
+                        <input type="text" name="search" class="form-control" placeholder="Cari alamat / no. kolam..." value="{{ request('search') }}">
+                    </div>
                 </div>
-            @else
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead class="table-light">
-                            <tr class="small text-secondary">
-                                <th>No. Kolam</th>
-                                <th>Komoditas</th>
-                                <th>Banyak Benih</th>
-                                <th>Lokasi Tambak</th>
-                                <th class="text-center" style="width: 90px;">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($tambaks as $t)
-                                <tr>
-                                    <td>
-                                        <span class="badge text-bg-primary px-2.5 py-1.5 fw-bold">#{{ $t->nomor ?? $t->id }}</span>
-                                    </td>
-                                    <td>
-                                        <span class="fw-semibold text-dark">{{ $t->jenis_ikan }}</span>
-                                    </td>
-                                    <td>{{ number_format($t->banyak_benih, 0, ',', '.') }} ekor</td>
-                                    <td class="small text-muted">{{ $t->alamat }}</td>
-                                    <td class="text-center">
-                                        <form action="{{ route('petambak.tambak.destroy', $t->id) }}" method="POST" class="d-inline form-delete-tambak">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="button" class="btn btn-outline-danger btn-sm rounded-3 px-2 py-1" onclick="hapusTambak(event, '{{ $t->nomor ?? $t->id }}')" title="Hapus Tambak">
-                                                <i class="bi bi-trash3"></i>
-                                            </button>
-                                        </form>
-                                    </td>
+                <div class="col-sm-4">
+                    <select name="jenis_ikan" class="form-select form-select-sm" onchange="this.form.submit()">
+                        <option value="">Semua Komoditas</option>
+                        <option value="Bandeng" {{ request('jenis_ikan') === 'Bandeng' ? 'selected' : '' }}>Bandeng</option>
+                        <option value="Vaname" {{ request('jenis_ikan') === 'Vaname' ? 'selected' : '' }}>Vaname</option>
+                        <option value="Windu" {{ request('jenis_ikan') === 'Windu' ? 'selected' : '' }}>Windu</option>
+                    </select>
+                </div>
+                <div class="col-sm-2 d-flex gap-1">
+                    <button type="submit" class="btn btn-primary btn-sm w-100"><i class="bi bi-funnel"></i></button>
+                    @if(request('search') || request('jenis_ikan'))
+                        <a href="{{ route('petambak.tambak.index') }}" class="btn btn-light btn-sm text-secondary" title="Reset Filter"><i class="bi bi-arrow-counterclockwise"></i></a>
+                    @endif
+                </div>
+            </form>
+
+            <div id="liveTableContainer">
+                @if($tambaks->isEmpty())
+                    <div class="p-4 text-center text-muted">
+                        <i class="bi bi-inbox fs-1 d-block mb-2 text-secondary opacity-50"></i>
+                        Tidak ada data tambak yang sesuai dengan filter pencarian.
+                    </div>
+                @else
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr class="small text-secondary">
+                                    <th>No. Kolam</th>
+                                    <th>Komoditas</th>
+                                    <th>Banyak Benih</th>
+                                    <th>Luas Lahan</th>
+                                    <th>Lokasi Tambak</th>
+                                    <th class="text-center" style="width: 90px;">Aksi</th>
                                 </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            @endif
+                            </thead>
+                            <tbody>
+                                @foreach($tambaks as $t)
+                                    <tr>
+                                        <td>
+                                            <span class="badge text-bg-primary px-2.5 py-1.5 fw-bold">{{ $t->nomor ?? $t->id }}</span>
+                                        </td>
+                                        <td>
+                                            <span class="fw-semibold text-dark">{{ $t->jenis_ikan }}</span>
+                                        </td>
+                                        <td>{{ number_format($t->banyak_benih, 0, ',', '.') }} ekor</td>
+                                        <td>{{ number_format($t->luas_lahan ?? 800, 0, ',', '.') }} m²</td>
+                                        <td class="small text-muted">{{ $t->alamat }}</td>
+                                        <td class="text-center">
+                                            @if(Auth::id() === $t->user_id || Auth::user()->role === 'admin')
+                                                <form action="{{ route('petambak.tambak.destroy', $t->id) }}" method="POST" class="d-inline form-delete-tambak">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="button" class="btn btn-outline-danger btn-sm rounded-3 px-2 py-1" onclick="hapusTambak(event, 'Kolam {{ $t->nomor ?? $t->id }}')" title="Hapus Tambak">
+                                                        <i class="bi bi-trash3"></i>
+                                                    </button>
+                                                </form>
+                                            @else
+                                                <span class="text-muted small">-</span>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination Links -->
+                    <div class="mt-3 d-flex justify-content-end">
+                        {{ $tambaks->links('pagination::bootstrap-5') }}
+                    </div>
+                @endif
+            </div>
         </div>
     </div>
 </div>
@@ -131,7 +177,7 @@
         event.preventDefault();
         const form = event.target.closest('form');
         Swal.fire({
-            title: 'Hapus Tambak #' + nomor + '?',
+            title: 'Hapus ' + nomor + '?',
             text: 'Data tambak beserta parameter yang terkait akan dihapus secara permanen.',
             icon: 'warning',
             showCancelButton: true,

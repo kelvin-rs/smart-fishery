@@ -15,6 +15,7 @@ class Tambak extends Model
         'user_id',
         'alamat',
         'banyak_benih',
+        'luas_lahan',
         'jenis_ikan',
         'nomor',
     ];

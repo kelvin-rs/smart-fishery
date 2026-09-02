@@ -120,7 +120,7 @@
                             @foreach($recentHarvests as $rh)
                                 <tr>
                                     <td>{{ $rh->tanggal_panen ? date('d/m/Y', strtotime($rh->tanggal_panen)) : '-' }}</td>
-                                    <td>Tambak #{{ $rh->id_tambak }}</td>
+                                    <td>Tambak {{ $rh->tambak->nomor ?? $rh->id_tambak }}</td>
                                     <td><span class="badge text-bg-light border">{{ $rh->jenis_ikan }}</span></td>
                                     <td class="fw-semibold">{{ number_format($rh->banyak_panen, 2, ',', '.') }} Kg</td>
                                     <td class="fw-bold text-success">Rp {{ number_format($rh->total, 0, ',', '.') }}</td>

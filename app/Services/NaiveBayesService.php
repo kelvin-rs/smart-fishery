@@ -49,36 +49,31 @@ class NaiveBayesService
         $posteriorTidak = 0.0;
         $source = 'external_python_server';
 
-        try {
-            // Panggil API External Python Server
-            $response = Http::timeout($timeout)->post("{$mlUrl}/api/predict/kualitas-air", $payload);
+        $response = Http::timeout($timeout)->post("{$mlUrl}/api/predict/kualitas-air", $payload);
 
-            if ($response->successful()) {
-                $data = $response->json();
-                $hasilPrediksi = $data['hasil_prediksi'] ?? ($data['keterangan'] ?? 'Normal');
-                $posteriorNormal = (float) ($data['posterior_normal'] ?? 0.0);
-                $posteriorTidak = (float) ($data['posterior_tidak'] ?? 0.0);
-            } else {
-                Log::warning("Python ML Server error: " . $response->status());
-                $source = 'server_offline_default';
-            }
-        } catch (\Throwable $e) {
-            Log::info("Python ML Server not reachable ({$e->getMessage()}), using datasheet standard baseline.");
-            $source = 'server_offline_default';
-            // Baseline status jika server python belum aktif:
-            $hasilPrediksi = ($suhu >= 26 && $suhu <= 32 && $ph >= 6.5 && $ph <= 8.5) ? 'Normal' : 'Tidak Normal';
+        if (!$response->successful()) {
+            $errBody = $response->json('message') ?? $response->body();
+            Log::error("Python ML Server Naive Bayes error [{$response->status()}]: {$errBody}");
+            throw new \RuntimeException("Server Machine Learning di VPS mengembalikan error: {$errBody}");
         }
+
+        $data = $response->json();
+        $hasilPrediksi = $data['hasil_prediksi'] ?? ($data['keterangan'] ?? 'Normal');
+        $posteriorNormal = (float) ($data['posterior_normal'] ?? 0.0);
+        $posteriorTidak = (float) ($data['posterior_tidak'] ?? 0.0);
 
         // Simpan log ke database tabel hasil_naive
         $saved = $this->hasilNaiveRepo->create([
             'user_id' => $input['user_id'] ?? null,
             'id_tambak' => $input['id_tambak'] ?? null,
+            'tanggal' => $input['tanggal'] ?? date('Y-m-d'),
             'keterangan' => $hasilPrediksi,
             'ph' => (string) $ph,
             'suhu' => (string) $suhu,
             'kesehatan' => $padatTebar,
             'hasil_normal' => (string) $posteriorNormal,
             'hasil_tidak' => (string) $posteriorTidak,
+            'created_at' => isset($input['tanggal']) ? ($input['tanggal'] . ' ' . date('H:i:s')) : now(),
         ]);
 
         return [

@@ -8,16 +8,21 @@ class Prediksi extends Model
 {
     protected $table = 'prediksi';
     protected $primaryKey = 'id_hasil';
-    public $timestamps = false;
+    public $timestamps = true;
 
     protected $fillable = [
         'id_hasil',
         'user_id',
         'id_tambak',
+        'tanggal',
         'jenis_ikan',
         'bulan',
         'keadaan_tambak',
         'prediksi',
+    ];
+
+    protected $casts = [
+        'tanggal' => 'date',
     ];
 
     public function user()

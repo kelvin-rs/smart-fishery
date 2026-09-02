@@ -39,14 +39,17 @@ Route::middleware(['auth', 'role:petambak'])->prefix('petambak')->name('petambak
     // Cek Kualitas Air (Gaussian Naive Bayes)
     Route::get('/kualitas-air', [PetambakKualitasAirController::class, 'index'])->name('kualitas-air.index');
     Route::post('/kualitas-air/proses', [PetambakKualitasAirController::class, 'proses'])->name('kualitas-air.proses');
+    Route::delete('/kualitas-air/{id}', [PetambakKualitasAirController::class, 'destroy'])->name('kualitas-air.destroy');
 
     // Prediksi Hasil Panen (Regresi Linier)
     Route::get('/prediksi-panen', [PetambakPrediksiPanenController::class, 'index'])->name('prediksi.index');
     Route::post('/prediksi-panen/proses', [PetambakPrediksiPanenController::class, 'proses'])->name('prediksi.proses');
+    Route::delete('/prediksi-panen/{id}', [PetambakPrediksiPanenController::class, 'destroy'])->name('prediksi.destroy');
 
     // Informasi Hasil Panen Petambak
     Route::get('/hasil-panen', [PetambakHasilPanenController::class, 'index'])->name('panen.index');
     Route::post('/hasil-panen', [PetambakHasilPanenController::class, 'store'])->name('panen.store');
+    Route::delete('/hasil-panen/{id}', [PetambakHasilPanenController::class, 'destroy'])->name('panen.destroy');
 
     // Tambah Sumber Data (Dataset Database)
     Route::get('/dataset', [PetambakDatasetController::class, 'index'])->name('dataset.index');

@@ -8,18 +8,23 @@ class HasilNaive extends Model
 {
     protected $table = 'hasil_naive';
     protected $primaryKey = 'id';
-    public $timestamps = false;
+    public $timestamps = true;
 
     protected $fillable = [
         'id',
         'user_id',
         'id_tambak',
+        'tanggal',
         'keterangan',
         'ph',
         'suhu',
         'kesehatan',
         'hasil_tidak',
         'hasil_normal',
+    ];
+
+    protected $casts = [
+        'tanggal' => 'date',
     ];
 
     public function user()

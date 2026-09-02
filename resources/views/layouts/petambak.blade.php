@@ -259,6 +259,135 @@
             flex-shrink: 0;
         }
 
+        /* Responsive Table & Typography Enhancements */
+        .table-responsive {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            border-radius: 0.85rem;
+            scrollbar-width: thin;
+            scrollbar-color: #cbd5e1 #f8fafc;
+            position: relative;
+        }
+
+        .table-responsive::-webkit-scrollbar {
+            height: 6px;
+        }
+
+        .table-responsive::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 4px;
+        }
+
+        .table-responsive::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        .table-responsive::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        .table-responsive table {
+            min-width: 680px;
+            margin-bottom: 0;
+        }
+
+        .table-responsive table th,
+        .table-responsive table td {
+            vertical-align: middle;
+            padding: 0.8rem 0.95rem;
+            font-size: 0.88rem;
+            white-space: nowrap;
+        }
+
+        .table-responsive table th {
+            font-weight: 700;
+            color: #475569;
+            letter-spacing: 0.02em;
+            background: #f8fafc;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        /* Interactive Clickable Table Rows */
+        .table-row-clickable {
+            cursor: pointer;
+            transition: all 0.18s ease;
+        }
+
+        .table-row-clickable:hover {
+            background-color: #f0fdf4 !important;
+            transform: scale(1.002);
+        }
+
+        .table-row-clickable:active {
+            background-color: #dcfce7 !important;
+        }
+
+        /* Popup Detail Modal Styling */
+        .modal-detail-dialog {
+            max-width: 820px;
+        }
+
+        .modal-detail-content {
+            border-radius: 1.25rem !important;
+            border: none;
+            overflow: hidden;
+            box-shadow: 0 20px 40px -15px rgba(15, 23, 42, 0.25);
+        }
+
+        .modal-detail-header {
+            background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+            color: #ffffff;
+            padding: 1.25rem 1.75rem;
+            border: none;
+        }
+
+        .modal-detail-body {
+            background-color: #f8fafc;
+            padding: 1.5rem 1.75rem;
+        }
+
+        .modal-detail-footer {
+            background-color: #ffffff;
+            border-top: 1px solid #e2e8f0;
+            padding: 1rem 1.75rem;
+        }
+
+        .modal-card-item {
+            background: #ffffff;
+            border-radius: 1rem;
+            border: 1px solid #e2e8f0;
+            padding: 1.25rem 1.5rem;
+            margin-bottom: 1.25rem;
+            box-shadow: 0 2px 8px -2px rgba(15, 23, 42, 0.04);
+        }
+
+        .modal-card-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .param-grid-card {
+            background: #ffffff;
+            border-radius: 0.85rem;
+            border: 1px solid #e2e8f0;
+            padding: 1.15rem 1.15rem;
+            height: 100%;
+            box-shadow: 0 2px 6px -2px rgba(15, 23, 42, 0.03);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .prob-subcard {
+            border-radius: 0.85rem;
+            padding: 1.15rem 1.25rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 100%;
+            box-shadow: 0 2px 6px -2px rgba(15, 23, 42, 0.03);
+        }
+
         /* Mobile Responsive */
         @media (max-width: 991.98px) {
             .sidebar {
@@ -417,7 +546,7 @@
         </header>
 
         <!-- Main Content -->
-        <main class="content-area">
+        <main class="content-area" id="mainContentArea">
             @yield('content')
         </main>
     </div>
@@ -529,6 +658,8 @@
             });
         }
     </script>
+    <!-- Smart Fishery Live Engine -->
+    <script src="{{ asset('assets/js/smart-live-engine.js') }}"></script>
     @yield('scripts')
 </body>
 </html>

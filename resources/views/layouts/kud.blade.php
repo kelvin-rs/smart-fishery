@@ -216,6 +216,55 @@
             box-shadow: 0 8px 28px -6px rgba(15, 23, 42, 0.08);
         }
 
+        /* Responsive Table & Typography Enhancements */
+        .table-responsive {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            border-radius: 0.85rem;
+            scrollbar-width: thin;
+            scrollbar-color: #cbd5e1 #f8fafc;
+            position: relative;
+        }
+
+        .table-responsive::-webkit-scrollbar {
+            height: 6px;
+        }
+
+        .table-responsive::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 4px;
+        }
+
+        .table-responsive::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        .table-responsive::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        .table-responsive table {
+            min-width: 680px;
+            margin-bottom: 0;
+        }
+
+        .table-responsive table th,
+        .table-responsive table td {
+            vertical-align: middle;
+            padding: 0.8rem 0.95rem;
+            font-size: 0.88rem;
+            white-space: nowrap;
+        }
+
+        .table-responsive table th {
+            font-weight: 700;
+            color: #475569;
+            letter-spacing: 0.02em;
+            background: #f8fafc;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
         .sidebar-backdrop {
             display: none;
             position: fixed;
@@ -358,7 +407,7 @@
         </header>
 
         <!-- Main Content -->
-        <main class="content-area">
+        <main class="content-area" id="mainContentArea">
             @yield('content')
         </main>
     </div>
@@ -455,6 +504,8 @@
             });
         }
     </script>
+    <!-- Smart Fishery Live Engine -->
+    <script src="{{ asset('assets/js/smart-live-engine.js') }}"></script>
     @yield('scripts')
 </body>
 </html>

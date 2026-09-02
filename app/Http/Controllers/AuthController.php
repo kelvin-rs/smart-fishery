@@ -41,6 +41,16 @@ class AuthController extends Controller
             $request->session()->regenerate();
             $user = Auth::user();
 
+            // Sanitasi intended URL agar tidak terjadi redirect silang role
+            $intended = session()->get('url.intended');
+            if ($intended) {
+                if ($user->role === 'kud' && str_contains($intended, '/petambak')) {
+                    session()->forget('url.intended');
+                } elseif ($user->role === 'petambak' && str_contains($intended, '/kud')) {
+                    session()->forget('url.intended');
+                }
+            }
+
             return redirect()->intended($this->getRedirectRoute($user))
                 ->with('success', 'Selamat datang kembali, ' . ($user->username ?? 'User') . '!');
         }

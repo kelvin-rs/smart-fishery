@@ -12,15 +12,30 @@ class TambakController extends Controller
     /**
      * Menampilkan daftar tambak milik akun petambak yang sedang login.
      */
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
 
-        // Tampilkan tambak yang terdaftar untuk user yang login
-        $tambaks = Tambak::where('user_id', $user->id)
-            ->orWhere('id', $user->id_tambak)
-            ->orderBy('id', 'asc')
-            ->get();
+        $query = Tambak::where(function($q) use ($user) {
+            $q->where('user_id', $user->id)
+              ->orWhere('id', $user->id_tambak);
+        });
+
+        // Filter Pencarian (alamat / nomor)
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('alamat', 'like', "%{$search}%")
+                  ->orWhere('nomor', 'like', "%{$search}%");
+            });
+        }
+
+        // Filter Jenis Ikan
+        if ($request->filled('jenis_ikan')) {
+            $query->where('jenis_ikan', $request->jenis_ikan);
+        }
+
+        $tambaks = $query->orderBy('id', 'asc')->paginate(10)->withQueryString();
 
         return view('petambak.tambak.index', compact('user', 'tambaks'));
     }
@@ -35,11 +50,13 @@ class TambakController extends Controller
         $request->validate([
             'alamat' => 'required|string|max:100',
             'banyak_benih' => 'required|integer|min:1',
+            'luas_lahan' => 'required|numeric|min:1',
             'jenis_ikan' => 'required|string|in:Bandeng,Vaname,Windu',
             'nomor' => 'required|integer|min:1',
         ], [
             'alamat.required' => 'Alamat lokasi tambak wajib diisi.',
             'banyak_benih.required' => 'Jumlah benih ikan wajib diisi.',
+            'luas_lahan.required' => 'Luas lahan tambak (m²) wajib diisi.',
             'jenis_ikan.required' => 'Pilih jenis komoditas ikan/udang.',
             'nomor.required' => 'Nomor kolam/tambak wajib diisi.',
         ]);
@@ -48,6 +65,7 @@ class TambakController extends Controller
             'user_id' => $user->id,
             'alamat' => $request->alamat,
             'banyak_benih' => $request->banyak_benih,
+            'luas_lahan' => $request->luas_lahan,
             'jenis_ikan' => $request->jenis_ikan,
             'nomor' => $request->nomor,
         ]);

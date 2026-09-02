@@ -73,7 +73,7 @@
                 <select name="tambak_id" class="form-select form-select-sm border-0 bg-light fw-semibold" onchange="this.form.submit()">
                     @foreach($tambakList as $t)
                         <option value="{{ $t->id }}" {{ ($tambak && $tambak->id == $t->id) ? 'selected' : '' }}>
-                            Tambak #{{ $t->nomor ?? $t->id }} ({{ $t->jenis_ikan }})
+                            Tambak {{ $t->nomor ?? $t->id }} ({{ $t->jenis_ikan }})
                         </option>
                     @endforeach
                 </select>
@@ -188,7 +188,7 @@
                         <tbody>
                             <tr class="border-bottom">
                                 <td class="text-muted py-2.5">Nomor / Kode Unit</td>
-                                <td class="fw-bold text-dark py-2.5">Tambak #{{ $tambak->nomor ?? $tambak->id }}</td>
+                                <td class="fw-bold text-dark py-2.5">Tambak {{ $tambak->nomor ?? $tambak->id }}</td>
                             </tr>
                             <tr class="border-bottom">
                                 <td class="text-muted py-2.5">Lokasi Tambak</td>
@@ -197,6 +197,10 @@
                             <tr class="border-bottom">
                                 <td class="text-muted py-2.5">Banyak Benih Ditebar</td>
                                 <td class="fw-semibold text-dark py-2.5">{{ number_format($tambak->banyak_benih ?? 5000, 0, ',', '.') }} Ekor</td>
+                            </tr>
+                            <tr class="border-bottom">
+                                <td class="text-muted py-2.5">Luas Lahan Tambak</td>
+                                <td class="fw-semibold text-dark py-2.5">{{ number_format($tambak->luas_lahan ?? 800, 0, ',', '.') }} m²</td>
                             </tr>
                             <tr>
                                 <td class="text-muted py-2.5">Komoditas</td>

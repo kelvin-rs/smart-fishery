@@ -100,47 +100,49 @@
             </form>
         </div>
 
-        @if($dataKualitasList->isEmpty())
-            <div class="p-4 text-center text-muted">Belum ada data kualitas air di database.</div>
-        @else
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-3">
-                    <thead class="table-light small text-secondary">
-                        <tr>
-                            <th style="width: 80px;">No</th>
-                            <th>Suhu Air</th>
-                            <th>pH Air</th>
-                            <th>Padat Tebar</th>
-                            <th>Keterangan / Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($dataKualitasList as $index => $row)
+        <div id="liveTableContainer">
+            @if($dataKualitasList->isEmpty())
+                <div class="p-4 text-center text-muted">Belum ada data kualitas air di database.</div>
+            @else
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-3">
+                        <thead class="table-light small text-secondary">
                             <tr>
-                                <td>{{ $dataKualitasList->firstItem() + $index }}</td>
-                                <td><strong class="text-dark">{{ $row->suhu }}</strong> °C</td>
-                                <td><strong class="text-dark">{{ $row->ph }}</strong></td>
-                                <td><span class="badge text-bg-light border">{{ $row->kesehatan }}</span></td>
-                                <td>
-                                    <span class="badge {{ strtolower($row->ket) === 'normal' ? 'text-bg-success' : 'text-bg-danger' }}">
-                                        {{ $row->ket }}
-                                    </span>
-                                </td>
+                                <th style="width: 80px;">No</th>
+                                <th>Suhu Air</th>
+                                <th>pH Air</th>
+                                <th>Padat Tebar</th>
+                                <th>Keterangan / Status</th>
                             </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-                <small class="text-muted">
-                    Menampilkan {{ $dataKualitasList->firstItem() }} - {{ $dataKualitasList->lastItem() }} dari {{ number_format($dataKualitasList->total(), 0, ',', '.') }} data
-                </small>
-                <div>
-                    {{ $dataKualitasList->links('pagination::bootstrap-5') }}
+                        </thead>
+                        <tbody>
+                            @foreach($dataKualitasList as $index => $row)
+                                <tr>
+                                    <td>{{ $dataKualitasList->firstItem() + $index }}</td>
+                                    <td><strong class="text-dark">{{ $row->suhu }}</strong> °C</td>
+                                    <td><strong class="text-dark">{{ $row->ph }}</strong></td>
+                                    <td><span class="badge text-bg-light border">{{ $row->kesehatan }}</span></td>
+                                    <td>
+                                        <span class="badge {{ strtolower($row->ket) === 'normal' ? 'text-bg-success' : 'text-bg-danger' }}">
+                                            {{ $row->ket }}
+                                        </span>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
                 </div>
-            </div>
-        @endif
+
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <small class="text-muted">
+                        Menampilkan {{ $dataKualitasList->firstItem() }} - {{ $dataKualitasList->lastItem() }} dari {{ number_format($dataKualitasList->total(), 0, ',', '.') }} data
+                    </small>
+                    <div>
+                        {{ $dataKualitasList->links('pagination::bootstrap-5') }}
+                    </div>
+                </div>
+            @endif
+        </div>
     </div>
 
 @else
@@ -190,41 +192,43 @@
             </form>
         </div>
 
-        @if($dataPrediksiList->isEmpty())
-            <div class="p-4 text-center text-muted">Belum ada data prediksi panen di database.</div>
-        @else
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-3">
-                    <thead class="table-light small text-secondary">
-                        <tr>
-                            <th style="width: 80px;">No</th>
-                            <th>Unit Tambak</th>
-                            <th>Komoditas</th>
-                            <th>Estimasi Bobot Panen (Prediksi)</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($dataPrediksiList as $index => $row)
+        <div id="liveTableContainer">
+            @if($dataPrediksiList->isEmpty())
+                <div class="p-4 text-center text-muted">Belum ada data prediksi panen di database.</div>
+            @else
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-3">
+                        <thead class="table-light small text-secondary">
                             <tr>
-                                <td>{{ $dataPrediksiList->firstItem() + $index }}</td>
-                                <td><span class="badge text-bg-primary">Tambak #{{ $row->id_tambak }}</span></td>
-                                <td>{{ $row->tambak->jenis_ikan ?? 'Bandeng' }}</td>
-                                <td><strong class="text-success">{{ $row->prediksi }}</strong></td>
+                                <th style="width: 80px;">No</th>
+                                <th>Unit Tambak</th>
+                                <th>Komoditas</th>
+                                <th>Estimasi Bobot Panen (Prediksi)</th>
                             </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-                <small class="text-muted">
-                    Menampilkan {{ $dataPrediksiList->firstItem() }} - {{ $dataPrediksiList->lastItem() }} dari {{ number_format($dataPrediksiList->total(), 0, ',', '.') }} data
-                </small>
-                <div>
-                    {{ $dataPrediksiList->links('pagination::bootstrap-5') }}
+                        </thead>
+                        <tbody>
+                            @foreach($dataPrediksiList as $index => $row)
+                                <tr>
+                                    <td>{{ $dataPrediksiList->firstItem() + $index }}</td>
+                                    <td><span class="badge text-bg-primary">Tambak {{ $row->tambak->nomor ?? $row->id_tambak }}</span></td>
+                                    <td>{{ $row->tambak->jenis_ikan ?? 'Bandeng' }}</td>
+                                    <td><strong class="text-success">{{ $row->prediksi }}</strong></td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
                 </div>
-            </div>
-        @endif
+
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <small class="text-muted">
+                        Menampilkan {{ $dataPrediksiList->firstItem() }} - {{ $dataPrediksiList->lastItem() }} dari {{ number_format($dataPrediksiList->total(), 0, ',', '.') }} data
+                    </small>
+                    <div>
+                        {{ $dataPrediksiList->links('pagination::bootstrap-5') }}
+                    </div>
+                </div>
+            @endif
+        </div>
     </div>
 @endif
 

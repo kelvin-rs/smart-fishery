@@ -28,7 +28,7 @@
                         </span>
                         @if($user->tambak)
                             <span class="badge bg-white text-secondary border px-3 py-1.5 rounded-pill">
-                                <i class="bi bi-geo-alt me-1 text-info"></i>Tambak #{{ $user->tambak->nomor ?? $user->tambak->id }}
+                                <i class="bi bi-geo-alt me-1 text-info"></i>Tambak {{ $user->tambak->nomor ?? $user->tambak->id }}
                             </span>
                         @endif
                     </div>
