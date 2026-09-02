@@ -201,7 +201,7 @@
                 <div class="col-lg-5 auth-side-banner">
                     <div>
                         <div class="brand-pill mb-4">
-                            <i class="bi bi-water"></i> Smart Fishery Village
+                            <i class="bi bi-water"></i> Smart Fishery
                         </div>
                         <h2 class="fw-bold mb-3">Sistem Informasi Pertambakan</h2>
                         <p class="text-white-50 small mb-4" style="line-height: 1.7;">
@@ -230,7 +230,10 @@
                 </div>
 
                 <!-- Sisi Kanan / Form Auth -->
-                <div class="col-lg-7 auth-form-side">
+                <div class="col-lg-7 auth-form-side position-relative">
+                    <a href="{{ route('home') }}" class="text-secondary text-decoration-none small fw-medium position-absolute top-0 end-0 m-4">
+                        <i class="bi bi-arrow-left me-1"></i> Kembali ke Beranda
+                    </a>
                     <!-- Flash Message -->
                     @if (session('status'))
                         <div class="alert alert-success alert-dismissible fade show rounded-3 small py-2.5 mb-3" role="alert">

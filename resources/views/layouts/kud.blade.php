@@ -310,7 +310,7 @@
             </div>
             <div>
                 <div class="brand-text">Smart KUD</div>
-                <div class="brand-sub">Koperasi Portal</div>
+                <div class="brand-sub">Portal Koperasi</div>
             </div>
         </a>
 
@@ -340,7 +340,7 @@
         <div class="sidebar-footer text-center">
             <div class="d-flex align-items-center justify-content-center gap-2 small text-white-50">
                 <span class="spinner-grow spinner-grow-sm text-info" style="width: 6px; height: 6px;" role="status"></span>
-                <span>Smart KUD Village</span>
+                <span>Smart KUD</span>
             </div>
         </div>
     </aside>

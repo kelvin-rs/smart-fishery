@@ -731,7 +731,7 @@
     <footer>
         <div class="container text-center small">
             <div class="mb-2 text-white fw-bold fs-6">
-                Smart Fishery Village
+                Smart Fishery
             </div>
             <div class="text-white-50">
                 Sistem Informasi Komunikasi & Tata Kelola Pertambakan Desa Nelayan Cerdas

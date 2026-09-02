@@ -97,7 +97,7 @@
                 <h5 class="fw-bold text-dark mb-0">
                     <i class="bi bi-clock-history text-secondary me-1"></i> Rekap Panen Terbaru
                 </h5>
-                <a href="{{ route('kud.panen.index') }}" class="btn btn-light btn-sm text-secondary">
+                <a href="{{ route('kud.panen.index') }}" class="btn btn-primary btn-sm">
                     Lihat Semua
                 </a>
             </div>
