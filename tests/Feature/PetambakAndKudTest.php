@@ -65,6 +65,7 @@ class PetambakAndKudTest extends TestCase
         $response = $this->actingAs($this->petambak)->post(route('petambak.tambak.store'), [
             'alamat' => 'Tambak Baru Sidoarjo',
             'banyak_benih' => 7500,
+            'luas_lahan' => 800,
             'jenis_ikan' => 'Vaname',
             'nomor' => 99,
         ]);
