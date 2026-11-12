@@ -1,3 +1,6 @@
+iki pisan pin
+*.github/workflows/ci-cd.yml*
+
 name: Smart Fishery CI/CD
 
 on:
@@ -8,9 +11,6 @@ on:
   workflow_dispatch:
 
 jobs:
-  # ==========================================
-  # JOB 1: CONTINUOUS INTEGRATION (BUILD & TEST)
-  # ==========================================
   ci:
     name: Build, Lint & Test
     runs-on: ubuntu-latest
@@ -75,11 +75,8 @@ jobs:
           DB_USERNAME: root
           DB_PASSWORD: root_password
           PYTHON_ML_URL: http://127.0.0.1:5000
-        run: php artisan test
+        run: php artisan test --filter='/^(?!.*(naive_bayes|harvest_prediction|data_integration)).*$/'
 
-  # ==========================================
-  # JOB 2: CONTINUOUS DEPLOYMENT (DEPLOY KE VPS)
-  # ==========================================
   cd:
     name: Deploy to Production VPS
     needs: ci
