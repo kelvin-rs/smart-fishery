@@ -13,7 +13,7 @@ return new class extends Migration
     {
         if (!Schema::hasTable('hasil_naive')) {
             Schema::create('hasil_naive', function (Blueprint $table) {
-                $table->id('id_hasil');
+                $table->id();
                 $table->string('keterangan', 20)->nullable();
                 $table->string('ph', 20)->nullable();
                 $table->string('suhu', 20)->nullable();
