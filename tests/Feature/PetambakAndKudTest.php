@@ -24,6 +24,7 @@ class PetambakAndKudTest extends TestCase
         $this->tambak = Tambak::create([
             'alamat' => 'Sidoarjo',
             'banyak_benih' => 5000,
+            'luas_lahan' => 800,
             'jenis_ikan' => 'Bandeng',
             'nomor' => 1,
         ]);
