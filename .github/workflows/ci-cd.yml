@@ -1,6 +1,3 @@
-iki pisan pin
-*.github/workflows/ci-cd.yml*
-
 name: Smart Fishery CI/CD
 
 on:
