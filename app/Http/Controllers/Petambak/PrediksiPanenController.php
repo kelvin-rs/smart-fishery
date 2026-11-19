@@ -37,8 +37,18 @@ class PrediksiPanenController extends Controller
         // Kondisi mutu air berbasis VOTE MAYORITAS dari seluruh hasil Naïve Bayes per unit tambak
         $statusPerTambak = [];
         foreach ($tambaks as $t) {
-            $countNormal = HasilNaive::where('id_tambak', $t->id)->where('keterangan', 'Normal')->count();
-            $countTidak  = HasilNaive::where('id_tambak', $t->id)->where('keterangan', '!=', 'Normal')->count();
+            $matchTambak = function ($q) use ($t) {
+                $q->where('id_tambak', $t->id);
+                if (!empty($t->nomor)) {
+                    $q->orWhere('id_tambak', $t->nomor);
+                }
+                if (($t->nomor ?? $t->id) == 1) {
+                    $q->orWhereNull('id_tambak');
+                }
+            };
+
+            $countNormal = HasilNaive::where($matchTambak)->where('keterangan', 'Normal')->count();
+            $countTidak  = HasilNaive::where($matchTambak)->where('keterangan', '!=', 'Normal')->count();
 
             // Mayoritas menang; jika seri atau belum ada data → Normal
             $keadaan = $countTidak > $countNormal ? 'Tidak Normal' : 'Normal';
@@ -149,9 +159,19 @@ class PrediksiPanenController extends Controller
                 ->with('error', 'Unit tambak tidak valid atau tidak ditemukan.');
         }
 
+        $matchTambak = function ($q) use ($tambak) {
+            $q->where('id_tambak', $tambak->id);
+            if (!empty($tambak->nomor)) {
+                $q->orWhere('id_tambak', $tambak->nomor);
+            }
+            if (($tambak->nomor ?? $tambak->id) == 1) {
+                $q->orWhereNull('id_tambak');
+            }
+        };
+
         // Peringatan minimal 15 data hasil Naïve Bayes untuk tambak ini
         $minData = config('smartfishery.min_data_naive', 15);
-        $countNaive = HasilNaive::where('id_tambak', $idTambak)->count();
+        $countNaive = HasilNaive::where($matchTambak)->count();
         if ($countNaive < $minData) {
             return redirect()->route('petambak.prediksi.index')
                 ->withInput()
@@ -159,8 +179,8 @@ class PrediksiPanenController extends Controller
         }
 
         // Hitung vote mayoritas Naïve Bayes
-        $countNormal = HasilNaive::where('id_tambak', $idTambak)->where('keterangan', 'Normal')->count();
-        $countTidak  = HasilNaive::where('id_tambak', $idTambak)->where('keterangan', '!=', 'Normal')->count();
+        $countNormal = HasilNaive::where($matchTambak)->where('keterangan', 'Normal')->count();
+        $countTidak  = HasilNaive::where($matchTambak)->where('keterangan', '!=', 'Normal')->count();
         $keadaanTambak = $countTidak > $countNormal ? 'Tidak Normal' : 'Normal';
 
         $params = $request->all();

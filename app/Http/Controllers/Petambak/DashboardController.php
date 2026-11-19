@@ -28,9 +28,25 @@ class DashboardController extends Controller
         $kudPrice = Kud::where('jenis_ikan', $jenisIkan)->first();
         $hargaIkan = $kudPrice->harga ?? 20000;
 
+        // Closure filter HasilNaive untuk tambak terpilih (termasuk data lama yang id_tambak-nya NULL pada Tambak 1)
+        $matchTambakNaive = function ($q) use ($tambak) {
+            if (!$tambak) {
+                return;
+            }
+            $q->where(function ($sub) use ($tambak) {
+                $sub->where('id_tambak', $tambak->id);
+                if (!empty($tambak->nomor)) {
+                    $sub->orWhere('id_tambak', $tambak->nomor);
+                }
+                if (($tambak->nomor ?? $tambak->id) == 1) {
+                    $sub->orWhereNull('id_tambak');
+                }
+            });
+        };
+
         // Ambil status kualitas air berdasarkan vote mayoritas Naïve Bayes pada tambak terpilih
-        $countNormal = $tambak ? HasilNaive::where('id_tambak', $tambak->id)->where('keterangan', 'Normal')->count() : 0;
-        $countTidak  = $tambak ? HasilNaive::where('id_tambak', $tambak->id)->where('keterangan', '!=', 'Normal')->count() : 0;
+        $countNormal = $tambak ? HasilNaive::where($matchTambakNaive)->where('keterangan', 'Normal')->count() : 0;
+        $countTidak  = $tambak ? HasilNaive::where($matchTambakNaive)->where('keterangan', '!=', 'Normal')->count() : 0;
         if (($countNormal + $countTidak) > 0) {
             $statusTambak = $countTidak > $countNormal ? 'Tidak Normal' : 'Normal';
         } else {
@@ -42,31 +58,34 @@ class DashboardController extends Controller
         $latestPrediksi = Prediksi::where('id_tambak', $tambak->id ?? 1)->orderBy('id_hasil', 'desc')->first();
         $prediksiPanen = $latestPrediksi->prediksi ?? '365.00 - 456.36 Kg';
 
-        // Ambil hingga 15 data terakhir untuk grafik pH dan Suhu (tetap tampil walau data < 15 atau status Tidak Normal)
+        // Ambil hingga 15 data terakhir untuk grafik pH dan Suhu
+        // Prioritas utama: tabel HasilNaive (data menu Cek Kualitas Air) agar 100% sinkron dengan tabel kualitas air
         $filterDate = $request->query('tanggal');
 
-        $sensorQuery = Ikan::orderBy('id', 'desc');
         $naiveQuery  = HasilNaive::orderBy('id', 'desc');
+        $sensorQuery = Ikan::orderBy('id', 'desc');
 
         if ($tambak) {
+            $naiveQuery->where($matchTambakNaive);
             $sensorQuery->where('id_tambak', $tambak->id);
-            $naiveQuery->where('id_tambak', $tambak->id);
         }
         if ($filterDate) {
+            $naiveQuery->where(function ($q) use ($filterDate) {
+                $q->whereDate('tanggal', $filterDate)
+                  ->orWhereDate('created_at', $filterDate);
+            });
             $sensorQuery->whereDate('waktu', $filterDate);
-            $naiveQuery->whereDate('tanggal', $filterDate);
         }
 
-        $sensors   = $sensorQuery->take(15)->get()->reverse()->values();
         $naiveData = $naiveQuery->take(15)->get()->reverse()->values();
+        $sensors   = $sensorQuery->take(15)->get()->reverse()->values();
 
         // Siapkan data label & nilai untuk Chart.js
         $chartLabels = [];
         $chartSuhu   = [];
         $chartPh     = [];
 
-        // Gunakan sumber data tambak yang memiliki titik data lebih lengkap (HasilNaive vs Ikan)
-        if ($naiveData->count() >= $sensors->count() && $naiveData->isNotEmpty()) {
+        if ($naiveData->isNotEmpty()) {
             foreach ($naiveData as $item) {
                 $waktuFormat = $item->created_at
                     ? $item->created_at->format('H:i d/m')
@@ -80,26 +99,6 @@ class DashboardController extends Controller
                 $chartLabels[] = $sensor->waktu ? date('H:i d/m', strtotime($sensor->waktu)) : 'Data #' . $sensor->id;
                 $chartSuhu[]   = (float) $sensor->suhu;
                 $chartPh[]     = (float) $sensor->ph;
-            }
-        } else {
-            // Fallback jika tambak baru belum punya data sama sekali: tampilkan 15 data uji terakhir di sistem
-            $fallbackNaive = HasilNaive::orderBy('id', 'desc')->take(15)->get()->reverse()->values();
-            if ($fallbackNaive->isNotEmpty()) {
-                foreach ($fallbackNaive as $item) {
-                    $waktuFormat = $item->created_at
-                        ? $item->created_at->format('H:i d/m')
-                        : ($item->tanggal ? date('d/m', strtotime($item->tanggal)) : 'Uji #' . $item->id);
-                    $chartLabels[] = $waktuFormat;
-                    $chartSuhu[]   = (float) $item->suhu;
-                    $chartPh[]     = (float) $item->ph;
-                }
-            } else {
-                $fallbackSensors = Ikan::orderBy('id', 'desc')->take(15)->get()->reverse()->values();
-                foreach ($fallbackSensors as $sensor) {
-                    $chartLabels[] = $sensor->waktu ? date('H:i d/m', strtotime($sensor->waktu)) : 'Data #' . $sensor->id;
-                    $chartSuhu[]   = (float) $sensor->suhu;
-                    $chartPh[]     = (float) $sensor->ph;
-                }
             }
         }
 
