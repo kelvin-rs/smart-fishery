@@ -28,70 +28,86 @@ class DashboardController extends Controller
         $kudPrice = Kud::where('jenis_ikan', $jenisIkan)->first();
         $hargaIkan = $kudPrice->harga ?? 20000;
 
-        // Ambil status kualitas air terakhir
-        $latestKualitas = HasilNaive::orderBy('id', 'desc')->first();
-        $statusTambak = $latestKualitas->keterangan ?? 'Normal';
+        // Ambil status kualitas air berdasarkan vote mayoritas Naïve Bayes pada tambak terpilih
+        $countNormal = $tambak ? HasilNaive::where('id_tambak', $tambak->id)->where('keterangan', 'Normal')->count() : 0;
+        $countTidak  = $tambak ? HasilNaive::where('id_tambak', $tambak->id)->where('keterangan', '!=', 'Normal')->count() : 0;
+        if (($countNormal + $countTidak) > 0) {
+            $statusTambak = $countTidak > $countNormal ? 'Tidak Normal' : 'Normal';
+        } else {
+            $latestKualitas = HasilNaive::orderBy('id', 'desc')->first();
+            $statusTambak = $latestKualitas->keterangan ?? 'Normal';
+        }
 
         // Ambil prediksi panen terakhir
         $latestPrediksi = Prediksi::where('id_tambak', $tambak->id ?? 1)->orderBy('id_hasil', 'desc')->first();
         $prediksiPanen = $latestPrediksi->prediksi ?? '365.00 - 456.36 Kg';
 
-        // Ambil 15 data sensor terakhir untuk grafik pH dan Suhu
+        // Ambil hingga 15 data terakhir untuk grafik pH dan Suhu (tetap tampil walau data < 15 atau status Tidak Normal)
         $filterDate = $request->query('tanggal');
-        $sensorQuery = Ikan::orderBy('id', 'asc');
-        
+
+        $sensorQuery = Ikan::orderBy('id', 'desc');
+        $naiveQuery  = HasilNaive::orderBy('id', 'desc');
+
         if ($tambak) {
             $sensorQuery->where('id_tambak', $tambak->id);
+            $naiveQuery->where('id_tambak', $tambak->id);
         }
         if ($filterDate) {
             $sensorQuery->whereDate('waktu', $filterDate);
+            $naiveQuery->whereDate('tanggal', $filterDate);
         }
-        
-        $sensors = $sensorQuery->take(15)->get();
+
+        $sensors   = $sensorQuery->take(15)->get()->reverse()->values();
+        $naiveData = $naiveQuery->take(15)->get()->reverse()->values();
 
         // Siapkan data label & nilai untuk Chart.js
         $chartLabels = [];
-        $chartSuhu = [];
-        $chartPh = [];
+        $chartSuhu   = [];
+        $chartPh     = [];
 
-        if ($sensors->isNotEmpty()) {
-            foreach ($sensors as $sensor) {
-                $chartLabels[] = $sensor->waktu ? date('H:i d/m', strtotime($sensor->waktu)) : 'Data #' . $sensor->id;
-                $chartSuhu[] = (float) $sensor->suhu;
-                $chartPh[] = (float) $sensor->ph;
-            }
-        } else {
-            // Fallback: Ambil data dari riwayat uji kualitas air (HasilNaive) jika data sensor IoT belum ada
-            $naiveQuery = HasilNaive::orderBy('id', 'asc');
-            if ($tambak) {
-                $naiveQuery->where('id_tambak', $tambak->id);
-            }
-            if ($filterDate) {
-                $naiveQuery->whereDate('tanggal', $filterDate);
-            }
-            $naiveData = $naiveQuery->take(15)->get();
-
-            // Jika untuk tambak ini belum ada, coba cari berdasarkan user aktif
-            if ($naiveData->isEmpty() && $user) {
-                $naiveData = HasilNaive::where('user_id', $user->id)
-                    ->orderBy('id', 'asc')
-                    ->take(15)
-                    ->get();
-            }
-
-            // Jika masih kosong (misal data umum), ambil 15 data uji terakhir yang ada di database
-            if ($naiveData->isEmpty()) {
-                $naiveData = HasilNaive::orderBy('id', 'asc')->take(15)->get();
-            }
-
+        // Gunakan sumber data tambak yang memiliki titik data lebih lengkap (HasilNaive vs Ikan)
+        if ($naiveData->count() >= $sensors->count() && $naiveData->isNotEmpty()) {
             foreach ($naiveData as $item) {
-                $waktuFormat = $item->created_at 
-                    ? $item->created_at->format('H:i d/m') 
+                $waktuFormat = $item->created_at
+                    ? $item->created_at->format('H:i d/m')
                     : ($item->tanggal ? date('d/m', strtotime($item->tanggal)) : 'Uji #' . $item->id);
                 $chartLabels[] = $waktuFormat;
-                $chartSuhu[] = (float) $item->suhu;
-                $chartPh[] = (float) $item->ph;
+                $chartSuhu[]   = (float) $item->suhu;
+                $chartPh[]     = (float) $item->ph;
             }
+        } elseif ($sensors->isNotEmpty()) {
+            foreach ($sensors as $sensor) {
+                $chartLabels[] = $sensor->waktu ? date('H:i d/m', strtotime($sensor->waktu)) : 'Data #' . $sensor->id;
+                $chartSuhu[]   = (float) $sensor->suhu;
+                $chartPh[]     = (float) $sensor->ph;
+            }
+        } else {
+            // Fallback jika tambak baru belum punya data sama sekali: tampilkan 15 data uji terakhir di sistem
+            $fallbackNaive = HasilNaive::orderBy('id', 'desc')->take(15)->get()->reverse()->values();
+            if ($fallbackNaive->isNotEmpty()) {
+                foreach ($fallbackNaive as $item) {
+                    $waktuFormat = $item->created_at
+                        ? $item->created_at->format('H:i d/m')
+                        : ($item->tanggal ? date('d/m', strtotime($item->tanggal)) : 'Uji #' . $item->id);
+                    $chartLabels[] = $waktuFormat;
+                    $chartSuhu[]   = (float) $item->suhu;
+                    $chartPh[]     = (float) $item->ph;
+                }
+            } else {
+                $fallbackSensors = Ikan::orderBy('id', 'desc')->take(15)->get()->reverse()->values();
+                foreach ($fallbackSensors as $sensor) {
+                    $chartLabels[] = $sensor->waktu ? date('H:i d/m', strtotime($sensor->waktu)) : 'Data #' . $sensor->id;
+                    $chartSuhu[]   = (float) $sensor->suhu;
+                    $chartPh[]     = (float) $sensor->ph;
+                }
+            }
+        }
+
+        // Jika baru ada 1 titik data (< 2 titik), tambahkan titik awal agar Chart.js tetap menggambar garis grafik
+        if (count($chartLabels) === 1) {
+            array_unshift($chartLabels, 'Awal');
+            array_unshift($chartSuhu, $chartSuhu[0]);
+            array_unshift($chartPh, $chartPh[0]);
         }
 
         return view('petambak.dashboard', compact(

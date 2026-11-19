@@ -156,6 +156,9 @@
         </div>
 
         <form action="{{ route('petambak.dashboard') }}" method="GET" class="d-flex gap-2 align-items-center m-0">
+            @if($tambak)
+                <input type="hidden" name="tambak_id" value="{{ $tambak->id }}">
+            @endif
             <div class="input-group input-group-sm">
                 <span class="input-group-text bg-light"><i class="bi bi-calendar-event"></i></span>
                 <input type="date" name="tanggal" value="{{ $filterDate }}" class="form-control form-control-sm">
@@ -164,7 +167,7 @@
                 <i class="bi bi-funnel me-1"></i> Filter
             </button>
             @if($filterDate)
-                <a href="{{ route('petambak.dashboard') }}" class="btn btn-light btn-sm text-secondary">Reset</a>
+                <a href="{{ route('petambak.dashboard', $tambak ? ['tambak_id' => $tambak->id] : []) }}" class="btn btn-light btn-sm text-secondary">Reset</a>
             @endif
         </form>
     </div>
