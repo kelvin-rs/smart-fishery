@@ -125,19 +125,27 @@
                 </div>
 
                 <!-- Peringatan Minimal 15 Data Hasil Naïve Bayes -->
-                <div id="warning_min_data" class="alert alert-warning border-0 rounded-3 py-2 px-3 small mb-3 d-flex align-items-center gap-2" style="display: none;">
+                @php
+                    $firstTotal = $statusPerTambak[$tambaks->first()->id ?? 0]['total'] ?? 0;
+                    $isKurangData = $firstTotal < ($minDataNaive ?? 15);
+                @endphp
+                <div id="warning_min_data" class="alert alert-warning border-0 rounded-3 py-2 px-3 small mb-3 {{ $isKurangData ? 'd-flex' : 'd-none' }} align-items-center gap-2">
                     <i class="bi bi-exclamation-triangle-fill fs-5 text-warning flex-shrink-0"></i>
                     <div>
                         <strong class="d-block text-dark">Data Pengujian Belum Cukup</strong>
                         <span id="warning_min_data_text" class="text-secondary" style="font-size: 0.76rem;">
-                            Tambak ini memerlukan minimal 15 data uji Naïve Bayes sebelum dapat melakukan estimasi panen.
+                            Tambak ini baru memiliki <strong>{{ $firstTotal }} data</strong> hasil uji kualitas air. Dibutuhkan minimal <strong>{{ $minDataNaive ?? 15 }} data Naïve Bayes</strong> agar model prediksi panen dapat dihitung secara akurat.
                         </span>
                     </div>
                 </div>
 
                 <!-- Submit Button -->
-                <button type="submit" id="btn_submit_prediksi" class="btn btn-primary w-100 py-2.5 rounded-3 fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2">
-                    <i class="bi bi-cpu-fill"></i> Hitung Prediksi Panen
+                <button type="submit" id="btn_submit_prediksi" class="btn btn-primary w-100 py-2.5 rounded-3 fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2 {{ $isKurangData ? 'opacity-50' : '' }}" {{ $isKurangData ? 'disabled' : '' }}>
+                    @if($isKurangData)
+                        <i class="bi bi-lock-fill"></i> Data Uji Kurang (Min. {{ $minDataNaive ?? 15 }})
+                    @else
+                        <i class="bi bi-cpu-fill"></i> Hitung Prediksi Panen
+                    @endif
                 </button>
             </form>
         </div>
@@ -517,7 +525,10 @@
         const btnSubmit = document.getElementById('btn_submit_prediksi');
 
         if (totalData < minData) {
-            if (warningBox) warningBox.style.display = 'flex';
+            if (warningBox) {
+                warningBox.classList.remove('d-none');
+                warningBox.classList.add('d-flex');
+            }
             if (warningText) {
                 warningText.innerHTML = `Tambak ini baru memiliki <strong>${totalData} data</strong> hasil uji kualitas air. Dibutuhkan minimal <strong>${minData} data Naïve Bayes</strong> agar model prediksi panen dapat dihitung secara akurat.`;
             }
@@ -527,7 +538,10 @@
                 btnSubmit.innerHTML = `<i class="bi bi-lock-fill"></i> Data Uji Kurang (Min. ${minData})`;
             }
         } else {
-            if (warningBox) warningBox.style.display = 'none';
+            if (warningBox) {
+                warningBox.classList.remove('d-flex');
+                warningBox.classList.add('d-none');
+            }
             if (btnSubmit) {
                 btnSubmit.disabled = false;
                 btnSubmit.classList.remove('opacity-50');
