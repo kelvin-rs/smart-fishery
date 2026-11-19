@@ -56,9 +56,9 @@ class DashboardController extends Controller
 
         if ($sensors->isEmpty()) {
             // Data sampel representatif jika database sensor awal masih sedikit
-            $chartLabels = ['07:00 (Pagi)', '07:30', '08:00', '08:30', '11:00 (Siang)', '11:30', '12:00', '12:30', '15:00 (Sore)', '15:30', '16:00', '16:30'];
-            $chartSuhu = [28.2, 28.5, 28.8, 29.0, 30.5, 31.0, 30.8, 30.2, 29.5, 29.2, 28.9, 28.6];
-            $chartPh = [7.4, 7.5, 7.6, 7.8, 7.9, 7.8, 7.6, 7.5, 7.4, 7.3, 7.5, 7.4];
+            //$chartLabels = ['07:00 (Pagi)', '07:30', '08:00', '08:30', '11:00 (Siang)', '11:30', '12:00', '12:30', '15:00 (Sore)', '15:30', '16:00', '16:30'];
+            //$chartSuhu = [28.2, 28.5, 28.8, 29.0, 30.5, 31.0, 30.8, 30.2, 29.5, 29.2, 28.9, 28.6];
+            // $chartPh = [7.4, 7.5, 7.6, 7.8, 7.9, 7.8, 7.6, 7.5, 7.4, 7.3, 7.5, 7.4];
         } else {
             foreach ($sensors as $sensor) {
                 $chartLabels[] = $sensor->waktu ? date('H:i d/m', strtotime($sensor->waktu)) : 'Data #' . $sensor->id;

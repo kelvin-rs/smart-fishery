@@ -24,3 +24,6 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+.env.example
+BanuraSmart_MotionGraphic.mp4
+index.php
