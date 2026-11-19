@@ -54,16 +54,43 @@ class DashboardController extends Controller
         $chartSuhu = [];
         $chartPh = [];
 
-        if ($sensors->isEmpty()) {
-            // Data sampel representatif jika database sensor awal masih sedikit
-            //$chartLabels = ['07:00 (Pagi)', '07:30', '08:00', '08:30', '11:00 (Siang)', '11:30', '12:00', '12:30', '15:00 (Sore)', '15:30', '16:00', '16:30'];
-            //$chartSuhu = [28.2, 28.5, 28.8, 29.0, 30.5, 31.0, 30.8, 30.2, 29.5, 29.2, 28.9, 28.6];
-            // $chartPh = [7.4, 7.5, 7.6, 7.8, 7.9, 7.8, 7.6, 7.5, 7.4, 7.3, 7.5, 7.4];
-        } else {
+        if ($sensors->isNotEmpty()) {
             foreach ($sensors as $sensor) {
                 $chartLabels[] = $sensor->waktu ? date('H:i d/m', strtotime($sensor->waktu)) : 'Data #' . $sensor->id;
                 $chartSuhu[] = (float) $sensor->suhu;
                 $chartPh[] = (float) $sensor->ph;
+            }
+        } else {
+            // Fallback: Ambil data dari riwayat uji kualitas air (HasilNaive) jika data sensor IoT belum ada
+            $naiveQuery = HasilNaive::orderBy('id', 'asc');
+            if ($tambak) {
+                $naiveQuery->where('id_tambak', $tambak->id);
+            }
+            if ($filterDate) {
+                $naiveQuery->whereDate('tanggal', $filterDate);
+            }
+            $naiveData = $naiveQuery->take(15)->get();
+
+            // Jika untuk tambak ini belum ada, coba cari berdasarkan user aktif
+            if ($naiveData->isEmpty() && $user) {
+                $naiveData = HasilNaive::where('user_id', $user->id)
+                    ->orderBy('id', 'asc')
+                    ->take(15)
+                    ->get();
+            }
+
+            // Jika masih kosong (misal data umum), ambil 15 data uji terakhir yang ada di database
+            if ($naiveData->isEmpty()) {
+                $naiveData = HasilNaive::orderBy('id', 'asc')->take(15)->get();
+            }
+
+            foreach ($naiveData as $item) {
+                $waktuFormat = $item->created_at 
+                    ? $item->created_at->format('H:i d/m') 
+                    : ($item->tanggal ? date('d/m', strtotime($item->tanggal)) : 'Uji #' . $item->id);
+                $chartLabels[] = $waktuFormat;
+                $chartSuhu[] = (float) $item->suhu;
+                $chartPh[] = (float) $item->ph;
             }
         }
 

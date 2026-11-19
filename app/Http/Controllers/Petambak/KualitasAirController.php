@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Petambak;
 use App\Http\Controllers\Controller;
 use App\Models\HasilNaive;
 use App\Models\Tambak;
+use App\Models\Ikan;
 use App\Services\NaiveBayesService;
 use Illuminate\Http\Request;
 
@@ -145,6 +146,19 @@ class KualitasAirController extends Controller
 
         try {
             $hasil = $this->nbService->predict($params);
+
+            // Simpan juga ke tabel log sensor (Ikan) agar sinkron dengan grafik dashboard
+            try {
+                Ikan::create([
+                    'id_tambak' => $params['id_tambak'] ?? (\Illuminate\Support\Facades\Auth::user()->id_tambak ?? 1),
+                    'waktu' => isset($params['tanggal']) ? ($params['tanggal'] . ' ' . date('H:i:s')) : now(),
+                    'ph' => $params['ph'],
+                    'suhu' => $params['suhu'],
+                    'jenis_ikan' => $params['jenis_ikan'],
+                ]);
+            } catch (\Throwable $e) {
+                // Abaikan jika logging sensor sekunder mengalami kendala
+            }
 
             return redirect()->route('petambak.kualitas-air.index')
                 ->with('hasil_uji', $hasil)
