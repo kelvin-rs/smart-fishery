@@ -111,10 +111,14 @@
                     <label for="keadaan_tambak" class="form-label small fw-bold text-dark mb-1.5">
                         <i class="bi bi-shield-check text-primary me-1"></i> Kondisi Mutu Air Tambak
                     </label>
-                    <select id="keadaan_tambak" name="keadaan_tambak" class="form-select rounded-3 py-2 px-3 border" required>
-                        <option value="Normal" {{ $statusKualitas === 'Normal' ? 'selected' : '' }}>Normal (Sesuai Standar Mutu)</option>
-                        <option value="Tidak Normal" {{ $statusKualitas !== 'Normal' ? 'selected' : '' }}>Tidak Normal (Kualitas Air Kurang Optimal)</option>
-                    </select>
+                    <input type="hidden" id="keadaan_tambak" name="keadaan_tambak" value="{{ $statusKualitas }}">
+                    <div id="keadaan_display" class="form-control rounded-3 py-2 px-3 border bg-light fw-semibold {{ $statusKualitas === 'Normal' ? 'text-success' : 'text-danger' }}">
+                        <i id="keadaan_icon" class="bi {{ $statusKualitas === 'Normal' ? 'bi-check-circle-fill' : 'bi-exclamation-triangle-fill' }} me-1"></i>
+                        <span id="keadaan_text">{{ $statusKualitas === 'Normal' ? 'Normal (Sesuai Standar Mutu)' : 'Tidak Normal (Kualitas Air Kurang Optimal)' }}</span>
+                    </div>
+                    <div class="form-text text-muted small mt-1" style="font-size: 0.74rem;" id="keadaan_info">
+                        Otomatis berdasarkan vote hasil uji Naïve Bayes.
+                    </div>
                 </div>
 
                 <!-- Submit Button -->
@@ -465,6 +469,23 @@
         if (ikan && selectIkan) {
             selectIkan.value = ikan;
         }
+
+        // Update kondisi mutu air berdasarkan vote Naïve Bayes per tambak
+        const statusMap = @json($statusPerTambak);
+        const st = statusMap[select.value] || { keadaan: 'Normal', normal: 0, tidak: 0 };
+        const isNormal = st.keadaan === 'Normal';
+
+        document.getElementById('keadaan_tambak').value = st.keadaan;
+        const disp = document.getElementById('keadaan_display');
+        disp.classList.toggle('text-success', isNormal);
+        disp.classList.toggle('text-danger', !isNormal);
+        document.getElementById('keadaan_icon').className = 'bi me-1 ' + (isNormal ? 'bi-check-circle-fill' : 'bi-exclamation-triangle-fill');
+        document.getElementById('keadaan_text').textContent = isNormal
+            ? 'Normal (Sesuai Standar Mutu)'
+            : 'Tidak Normal (Kualitas Air Kurang Optimal)';
+        document.getElementById('keadaan_info').textContent = (st.normal + st.tidak) > 0
+            ? `Otomatis dari vote Naïve Bayes: ${st.normal} Normal vs ${st.tidak} Tidak Normal.`
+            : 'Belum ada data uji kualitas air untuk tambak ini (default: Normal).';
     }
 
     document.addEventListener('DOMContentLoaded', function() {

@@ -34,8 +34,25 @@ class PrediksiPanenController extends Controller
             $tambaks = Tambak::all();
         }
 
-        $latestKualitas = HasilNaive::orderBy('id', 'desc')->first();
-        $statusKualitas = $latestKualitas->keterangan ?? 'Normal';
+        // Kondisi mutu air berbasis VOTE MAYORITAS dari seluruh hasil Naïve Bayes per unit tambak
+        $statusPerTambak = [];
+        foreach ($tambaks as $t) {
+            $countNormal = HasilNaive::where('id_tambak', $t->id)->where('keterangan', 'Normal')->count();
+            $countTidak  = HasilNaive::where('id_tambak', $t->id)->where('keterangan', '!=', 'Normal')->count();
+
+            // Mayoritas menang; jika seri atau belum ada data → Normal
+            $keadaan = $countTidak > $countNormal ? 'Tidak Normal' : 'Normal';
+
+            $statusPerTambak[$t->id] = [
+                'keadaan' => $keadaan,
+                'normal'  => $countNormal,
+                'tidak'   => $countTidak,
+            ];
+        }
+
+        $firstTambakId  = $tambaks->first()->id ?? null;
+        $statusKualitas = $statusPerTambak[$firstTambakId]['keadaan'] ?? 'Normal';
+        $statusDetail   = '';
 
         $query = Prediksi::with('tambak')
             ->where(function($q) use ($user) {
@@ -90,7 +107,7 @@ class PrediksiPanenController extends Controller
 
         $history = $query->orderBy('id_hasil', 'desc')->paginate(10)->withQueryString();
 
-        return view('petambak.prediksi.index', compact('user', 'tambaks', 'statusKualitas', 'history'));
+        return view('petambak.prediksi.index', compact('user', 'tambaks', 'statusKualitas', 'statusPerTambak', 'statusDetail', 'history'));
     }
 
     public function destroy($id)
