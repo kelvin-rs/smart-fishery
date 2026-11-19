@@ -42,16 +42,18 @@
             <input type="date" name="tanggal" class="form-control form-control-sm" value="{{ request('tanggal') }}" onchange="this.form.submit()" title="Filter Tanggal Panen">
         </div>
         <div class="col-sm-3">
-            <select name="jenis_ikan" class="form-select form-select-sm" onchange="this.form.submit()">
-                <option value="">Semua Komoditas</option>
-                <option value="Bandeng" {{ request('jenis_ikan') === 'Bandeng' ? 'selected' : '' }}>Bandeng</option>
-                <option value="Vaname" {{ request('jenis_ikan') === 'Vaname' ? 'selected' : '' }}>Vaname</option>
-                <option value="Windu" {{ request('jenis_ikan') === 'Windu' ? 'selected' : '' }}>Windu</option>
+            <select name="id_tambak" class="form-select form-select-sm" onchange="this.form.submit()">
+                <option value="">Semua Unit Tambak</option>
+                @foreach($tambaks as $t)
+                    <option value="{{ $t->id }}" {{ request('id_tambak') == $t->id ? 'selected' : '' }}>
+                        Tambak {{ $t->nomor ?? $t->id }} ({{ $t->jenis_ikan }})
+                    </option>
+                @endforeach
             </select>
         </div>
         <div class="col-sm-2 d-flex gap-1">
             <button type="submit" class="btn btn-primary btn-sm w-100"><i class="bi bi-funnel"></i></button>
-            @if(request('search') || request('tanggal') || request('jenis_ikan'))
+            @if(request('search') || request('tanggal') || request('id_tambak') || request('jenis_ikan'))
                 <a href="{{ route('petambak.panen.index') }}" class="btn btn-light btn-sm text-secondary" title="Reset Filter"><i class="bi bi-arrow-counterclockwise"></i></a>
             @endif
         </div>
@@ -71,6 +73,7 @@
                             <th>No</th>
                             <th>Nama Petambak</th>
                             <th>Tanggal Panen</th>
+                            <th>Unit Tambak</th>
                             <th>No. Timbangan</th>
                             <th>Banyak Panen (Kg)</th>
                             <th>Jenis Ikan</th>
@@ -84,6 +87,7 @@
                                 <td>{{ $harvests->firstItem() + $idx }}</td>
                                 <td class="fw-semibold text-dark">{{ $user->username }}</td>
                                 <td>{{ $h->tanggal_panen ? date('d-m-Y', strtotime($h->tanggal_panen)) : '-' }}</td>
+                                <td><span class="badge text-bg-light border fw-semibold">Tambak {{ $h->tambak->nomor ?? ($h->id_tambak ?? '1') }}</span></td>
                                 <td><span class="badge text-bg-light border">{{ $h->id }}</span></td>
                                 <td class="fw-bold text-dark">{{ number_format($h->banyak_panen, 2, ',', '.') }} Kg</td>
                                 <td><span class="badge text-bg-info-subtle text-info-emphasis">{{ $h->jenis_ikan }}</span></td>
@@ -128,19 +132,29 @@
             </div>
             <form action="{{ route('petambak.panen.store') }}" method="POST">
                 @csrf
-                <input type="hidden" name="id_tambak" value="{{ $user->id_tambak ?? 1 }}">
                 <div class="modal-body py-3">
                     <div class="mb-3">
                         <label class="form-label small fw-semibold">Tanggal Panen</label>
                         <input type="date" name="tanggal_panen" class="form-control" value="{{ date('Y-m-d') }}" required>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label small fw-semibold">Komoditas Ikan / Udang</label>
-                        <select name="jenis_ikan" class="form-select" required>
-                            <option value="Bandeng">Ikan Bandeng</option>
-                            <option value="Vaname">Udang Vaname</option>
-                            <option value="Windu">Udang Windu</option>
+                        <label for="panen_id_tambak" class="form-label small fw-semibold">Pilih Unit Tambak</label>
+                        <select id="panen_id_tambak" name="id_tambak" class="form-select" required onchange="syncPanenTambak()">
+                            @foreach($tambaks as $t)
+                                <option value="{{ $t->id }}" data-ikan="{{ $t->jenis_ikan }}">
+                                    Tambak {{ $t->nomor ?? $t->id }} ({{ $t->jenis_ikan }})
+                                </option>
+                            @endforeach
                         </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Komoditas Ikan / Udang</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light"><i class="bi bi-tag-fill text-secondary"></i></span>
+                            <input type="text" id="panen_jenis_ikan_display" class="form-control bg-light fw-semibold text-dark" readonly>
+                        </div>
+                        <input type="hidden" id="panen_jenis_ikan" name="jenis_ikan" value="">
+                        <div class="form-text text-muted small mt-1" style="font-size: 0.74rem;">Otomatis mengikuti komoditas unit tambak.</div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label small fw-semibold">Bobot Hasil Panen (Kg)</label>
@@ -159,6 +173,22 @@
 
 @section('scripts')
 <script>
+    function syncPanenTambak() {
+        const sel = document.getElementById('panen_id_tambak');
+        if (!sel || !sel.options[sel.selectedIndex]) return;
+        const opt = sel.options[sel.selectedIndex];
+        const ikan = opt.dataset.ikan || 'Bandeng';
+        const namaIkan = { Bandeng: 'Ikan Bandeng', Vaname: 'Udang Vaname', Windu: 'Udang Windu' };
+
+        const disp = document.getElementById('panen_jenis_ikan_display');
+        const inp = document.getElementById('panen_jenis_ikan');
+        if (disp) disp.value = namaIkan[ikan] || ikan;
+        if (inp) inp.value = ikan;
+    }
+    document.addEventListener('DOMContentLoaded', function() {
+        syncPanenTambak();
+    });
+
     function hapusPanen(event, label) {
         event.preventDefault();
         const form = event.target.closest('form');

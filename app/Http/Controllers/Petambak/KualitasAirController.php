@@ -144,6 +144,12 @@ class KualitasAirController extends Controller
         $params = $request->all();
         $params['user_id'] = \Illuminate\Support\Facades\Auth::id();
 
+        // Komoditas & padat tebar selalu mengikuti data unit tambak
+        if (!empty($params['id_tambak']) && ($tambakSel = Tambak::find($params['id_tambak']))) {
+            $params['jenis_ikan'] = $tambakSel->jenis_ikan;
+            $params['padat_tebar'] = $tambakSel->status_padat_tebar;
+        }
+
         try {
             $hasil = $this->nbService->predict($params);
 

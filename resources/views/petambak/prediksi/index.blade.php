@@ -46,7 +46,7 @@
                                 data-luas="{{ $t->luas_lahan ?? 800 }}" 
                                 data-benih="{{ $t->banyak_benih ?? 5000 }}" 
                                 data-ikan="{{ $t->jenis_ikan }}">
-                                Tambak {{ $t->nomor ?? $t->id }} • {{ $t->jenis_ikan }}
+                                Tambak {{ $t->nomor ?? $t->id }}
                             </option>
                         @endforeach
                     </select>
@@ -80,16 +80,19 @@
                     <input type="hidden" id="banyak_benih" name="banyak_benih" value="5000">
                 </div>
 
-                <!-- Komoditas -->
+                <!-- Komoditas Otomatis Mengikuti Tambak -->
                 <div class="mb-3">
-                    <label for="jenis_ikan" class="form-label small fw-bold text-dark mb-1.5">
+                    <label class="form-label small fw-bold text-dark mb-1.5">
                         <i class="bi bi-water text-primary me-1"></i> Komoditas yang Dibudidayakan
                     </label>
-                    <select id="jenis_ikan" name="jenis_ikan" class="form-select rounded-3 py-2 px-3 border" required>
-                        <option value="Bandeng" {{ old('jenis_ikan') === 'Bandeng' ? 'selected' : '' }}>Ikan Bandeng</option>
-                        <option value="Vaname" {{ old('jenis_ikan') === 'Vaname' ? 'selected' : '' }}>Udang Vaname</option>
-                        <option value="Windu" {{ old('jenis_ikan') === 'Windu' ? 'selected' : '' }}>Udang Windu</option>
-                    </select>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light text-secondary"><i class="bi bi-tag-fill"></i></span>
+                        <input type="text" id="jenis_ikan_display" class="form-control rounded-end-3 py-2 px-3 border bg-light fw-semibold text-dark" readonly value="Ikan Bandeng">
+                    </div>
+                    <input type="hidden" id="jenis_ikan" name="jenis_ikan" value="Bandeng">
+                    <div class="form-text text-muted small mt-1" style="font-size: 0.74rem;">
+                        Otomatis menyesuaikan dari komoditas unit tambak yang dipilih.
+                    </div>
                 </div>
 
                 <!-- Bulan Siklus -->
@@ -121,8 +124,19 @@
                     </div>
                 </div>
 
+                <!-- Peringatan Minimal 15 Data Hasil Naïve Bayes -->
+                <div id="warning_min_data" class="alert alert-warning border-0 rounded-3 py-2 px-3 small mb-3 d-flex align-items-center gap-2" style="display: none;">
+                    <i class="bi bi-exclamation-triangle-fill fs-5 text-warning flex-shrink-0"></i>
+                    <div>
+                        <strong class="d-block text-dark">Data Pengujian Belum Cukup</strong>
+                        <span id="warning_min_data_text" class="text-secondary" style="font-size: 0.76rem;">
+                            Tambak ini memerlukan minimal 15 data uji Naïve Bayes sebelum dapat melakukan estimasi panen.
+                        </span>
+                    </div>
+                </div>
+
                 <!-- Submit Button -->
-                <button type="submit" class="btn btn-primary w-100 py-2.5 rounded-3 fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2">
+                <button type="submit" id="btn_submit_prediksi" class="btn btn-primary w-100 py-2.5 rounded-3 fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2">
                     <i class="bi bi-cpu-fill"></i> Hitung Prediksi Panen
                 </button>
             </form>
@@ -460,20 +474,30 @@
         const lblBenih = document.getElementById('lbl_benih');
         const inputLuas = document.getElementById('luas_lahan');
         const inputBenih = document.getElementById('banyak_benih');
-        const selectIkan = document.getElementById('jenis_ikan');
+        const inputIkan = document.getElementById('jenis_ikan');
+        const dispIkan = document.getElementById('jenis_ikan_display');
+
+        const namaKomoditas = {
+            'Bandeng': 'Ikan Bandeng',
+            'Vaname': 'Udang Vaname',
+            'Windu': 'Udang Windu'
+        };
 
         if (lblLuas) lblLuas.textContent = Number(luas).toLocaleString('id-ID');
         if (lblBenih) lblBenih.textContent = Number(benih).toLocaleString('id-ID');
         if (inputLuas) inputLuas.value = luas;
         if (inputBenih) inputBenih.value = benih;
-        if (ikan && selectIkan) {
-            selectIkan.value = ikan;
+        if (ikan) {
+            if (inputIkan) inputIkan.value = ikan;
+            if (dispIkan) dispIkan.value = namaKomoditas[ikan] || ikan;
         }
 
         // Update kondisi mutu air berdasarkan vote Naïve Bayes per tambak
         const statusMap = @json($statusPerTambak);
-        const st = statusMap[select.value] || { keadaan: 'Normal', normal: 0, tidak: 0 };
+        const st = statusMap[select.value] || { keadaan: 'Normal', normal: 0, tidak: 0, total: 0 };
         const isNormal = st.keadaan === 'Normal';
+        const totalData = typeof st.total !== 'undefined' ? st.total : (st.normal + st.tidak);
+        const minData = {{ $minDataNaive ?? 15 }};
 
         document.getElementById('keadaan_tambak').value = st.keadaan;
         const disp = document.getElementById('keadaan_display');
@@ -483,9 +507,33 @@
         document.getElementById('keadaan_text').textContent = isNormal
             ? 'Normal (Sesuai Standar Mutu)'
             : 'Tidak Normal (Kualitas Air Kurang Optimal)';
-        document.getElementById('keadaan_info').textContent = (st.normal + st.tidak) > 0
-            ? `Otomatis dari vote Naïve Bayes: ${st.normal} Normal vs ${st.tidak} Tidak Normal.`
-            : 'Belum ada data uji kualitas air untuk tambak ini (default: Normal).';
+        document.getElementById('keadaan_info').textContent = totalData > 0
+            ? `Otomatis dari vote Naïve Bayes: ${st.normal} Normal vs ${st.tidak} Tidak Normal (Total: ${totalData} data uji).`
+            : 'Belum ada data uji kualitas air untuk tambak ini.';
+
+        // Peringatan minimal 15 data hasil Naïve Bayes
+        const warningBox = document.getElementById('warning_min_data');
+        const warningText = document.getElementById('warning_min_data_text');
+        const btnSubmit = document.getElementById('btn_submit_prediksi');
+
+        if (totalData < minData) {
+            if (warningBox) warningBox.style.display = 'flex';
+            if (warningText) {
+                warningText.innerHTML = `Tambak ini baru memiliki <strong>${totalData} data</strong> hasil uji kualitas air. Dibutuhkan minimal <strong>${minData} data Naïve Bayes</strong> agar model prediksi panen dapat dihitung secara akurat.`;
+            }
+            if (btnSubmit) {
+                btnSubmit.disabled = true;
+                btnSubmit.classList.add('opacity-50');
+                btnSubmit.innerHTML = `<i class="bi bi-lock-fill"></i> Data Uji Kurang (Min. ${minData})`;
+            }
+        } else {
+            if (warningBox) warningBox.style.display = 'none';
+            if (btnSubmit) {
+                btnSubmit.disabled = false;
+                btnSubmit.classList.remove('opacity-50');
+                btnSubmit.innerHTML = `<i class="bi bi-cpu-fill"></i> Hitung Prediksi Panen`;
+            }
+        }
     }
 
     document.addEventListener('DOMContentLoaded', function() {

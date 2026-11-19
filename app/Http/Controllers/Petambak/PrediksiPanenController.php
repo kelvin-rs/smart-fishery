@@ -47,8 +47,11 @@ class PrediksiPanenController extends Controller
                 'keadaan' => $keadaan,
                 'normal'  => $countNormal,
                 'tidak'   => $countTidak,
+                'total'   => $countNormal + $countTidak,
             ];
         }
+
+        $minDataNaive   = config('smartfishery.min_data_naive', 15);
 
         $firstTambakId  = $tambaks->first()->id ?? null;
         $statusKualitas = $statusPerTambak[$firstTambakId]['keadaan'] ?? 'Normal';
@@ -107,7 +110,7 @@ class PrediksiPanenController extends Controller
 
         $history = $query->orderBy('id_hasil', 'desc')->paginate(10)->withQueryString();
 
-        return view('petambak.prediksi.index', compact('user', 'tambaks', 'statusKualitas', 'statusPerTambak', 'statusDetail', 'history'));
+        return view('petambak.prediksi.index', compact('user', 'tambaks', 'statusKualitas', 'statusPerTambak', 'statusDetail', 'minDataNaive', 'history'));
     }
 
     public function destroy($id)
@@ -133,15 +136,39 @@ class PrediksiPanenController extends Controller
         $request->validate([
             'tanggal' => 'nullable|date',
             'id_tambak' => 'required',
-            'jenis_ikan' => 'required|in:Bandeng,Vaname,Windu',
             'bulan' => 'required|integer|min:1|max:12',
-            'keadaan_tambak' => 'required|in:Normal,Tidak Normal',
             'luas_lahan' => 'nullable|numeric|min:1',
             'banyak_benih' => 'nullable|integer|min:1',
         ]);
 
+        $idTambak = $request->id_tambak;
+        $tambak = Tambak::find($idTambak);
+        if (!$tambak) {
+            return redirect()->route('petambak.prediksi.index')
+                ->withInput()
+                ->with('error', 'Unit tambak tidak valid atau tidak ditemukan.');
+        }
+
+        // Peringatan minimal 15 data hasil Naïve Bayes untuk tambak ini
+        $minData = config('smartfishery.min_data_naive', 15);
+        $countNaive = HasilNaive::where('id_tambak', $idTambak)->count();
+        if ($countNaive < $minData) {
+            return redirect()->route('petambak.prediksi.index')
+                ->withInput()
+                ->with('error', "Tambak " . ($tambak->nomor ?? $tambak->id) . " baru memiliki {$countNaive} data hasil uji kualitas air. Dibutuhkan minimal {$minData} data Naïve Bayes untuk menjalankan prediksi panen.");
+        }
+
+        // Hitung vote mayoritas Naïve Bayes
+        $countNormal = HasilNaive::where('id_tambak', $idTambak)->where('keterangan', 'Normal')->count();
+        $countTidak  = HasilNaive::where('id_tambak', $idTambak)->where('keterangan', '!=', 'Normal')->count();
+        $keadaanTambak = $countTidak > $countNormal ? 'Tidak Normal' : 'Normal';
+
         $params = $request->all();
         $params['user_id'] = Auth::id();
+        $params['jenis_ikan'] = $tambak->jenis_ikan;
+        $params['keadaan_tambak'] = $keadaanTambak;
+        $params['luas_lahan'] = (float) ($request->luas_lahan ?: ($tambak->luas_lahan ?? 800));
+        $params['banyak_benih'] = (int) ($request->banyak_benih ?: ($tambak->banyak_benih ?? 5000));
 
         try {
             $hasil = $this->predictionService->predictHarvest($params);

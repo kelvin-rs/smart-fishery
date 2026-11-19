@@ -38,9 +38,15 @@
                     <label for="id_tambak" class="form-label small fw-semibold text-secondary">Pilih Unit Tambak</label>
                     <div class="input-group">
                         <span class="input-group-text"><i class="bi bi-geo-alt"></i></span>
-                        <select id="id_tambak" name="id_tambak" class="form-select" required>
+                        <select id="id_tambak" name="id_tambak" class="form-select" required onchange="syncTambakKualitas()">
                             @foreach($tambaks as $t)
-                                <option value="{{ $t->id }}" {{ old('id_tambak') == $t->id ? 'selected' : '' }}>
+                                <option value="{{ $t->id }}" {{ old('id_tambak') == $t->id ? 'selected' : '' }}
+                                    data-ikan="{{ $t->jenis_ikan }}"
+                                    data-padat="{{ $t->status_padat_tebar }}"
+                                    data-kepadatan="{{ $t->kepadatan }}"
+                                    data-batas="{{ $t->batas_padat_tebar }}"
+                                    data-benih="{{ $t->banyak_benih }}"
+                                    data-luas="{{ $t->luas_lahan }}">
                                     Tambak {{ $t->nomor ?? $t->id }} ({{ $t->jenis_ikan }})
                                 </option>
                             @endforeach
@@ -61,15 +67,13 @@
                 </div>
 
                 <div class="mb-3">
-                    <label for="jenis_ikan" class="form-label small fw-semibold text-secondary">Jenis Ikan / Udang</label>
+                    <label class="form-label small fw-semibold text-secondary">Jenis Ikan / Udang</label>
                     <div class="input-group">
                         <span class="input-group-text"><i class="bi bi-water"></i></span>
-                        <select id="jenis_ikan" name="jenis_ikan" class="form-select" required>
-                            <option value="Bandeng" {{ old('jenis_ikan') === 'Bandeng' ? 'selected' : '' }}>Ikan Bandeng</option>
-                            <option value="Vaname" {{ old('jenis_ikan') === 'Vaname' ? 'selected' : '' }}>Udang Vaname</option>
-                            <option value="Windu" {{ old('jenis_ikan') === 'Windu' ? 'selected' : '' }}>Udang Windu</option>
-                        </select>
+                        <input type="text" id="jenis_ikan_display" class="form-control bg-light fw-semibold" readonly>
                     </div>
+                    <input type="hidden" id="jenis_ikan" name="jenis_ikan" value="{{ old('jenis_ikan', 'Bandeng') }}">
+                    <div class="form-text text-muted small mt-1" style="font-size: 0.74rem;">Otomatis mengikuti komoditas unit tambak.</div>
                 </div>
 
                 <div class="mb-3">
@@ -89,13 +93,14 @@
                 </div>
 
                 <div class="mb-4">
-                    <label for="padat_tebar" class="form-label small fw-semibold text-secondary">Kondisi Padat Tebar Lahan</label>
+                    <label class="form-label small fw-semibold text-secondary">Kondisi Padat Tebar Lahan</label>
                     <div class="input-group">
                         <span class="input-group-text"><i class="bi bi-grid-3x3"></i></span>
-                        <select id="padat_tebar" name="padat_tebar" class="form-select" required>
-                            <option value="Normal" {{ old('padat_tebar') === 'Normal' ? 'selected' : '' }}>Normal (Sesuai Kapasitas)</option>
-                            <option value="Tidak Normal" {{ old('padat_tebar') === 'Tidak Normal' ? 'selected' : '' }}>Tidak Normal (Terlalu Padat)</option>
-                        </select>
+                        <input type="text" id="padat_tebar_display" class="form-control bg-light fw-semibold" readonly>
+                    </div>
+                    <input type="hidden" id="padat_tebar" name="padat_tebar" value="Normal">
+                    <div class="form-text text-muted small mt-1" style="font-size: 0.74rem;" id="padat_tebar_info">
+                        Otomatis dari banyak benih ÷ luas lahan tambak.
                     </div>
                 </div>
 
@@ -365,6 +370,32 @@
 @endsection
 
 @section('scripts')
+<script>
+    function syncTambakKualitas() {
+        const sel = document.getElementById('id_tambak');
+        if (!sel || !sel.options[sel.selectedIndex]) return;
+        const opt = sel.options[sel.selectedIndex];
+
+        const ikan = opt.dataset.ikan || 'Bandeng';
+        const padat = opt.dataset.padat || 'Normal';
+        const namaIkan = { Bandeng: 'Ikan Bandeng', Vaname: 'Udang Vaname', Windu: 'Udang Windu' };
+
+        document.getElementById('jenis_ikan').value = ikan;
+        document.getElementById('jenis_ikan_display').value = namaIkan[ikan] || ikan;
+
+        const isNormal = padat === 'Normal';
+        document.getElementById('padat_tebar').value = padat;
+        const disp = document.getElementById('padat_tebar_display');
+        disp.value = isNormal
+            ? `Normal (${opt.dataset.batas} ekor/m²)`
+            : `Tidak Normal (Di Luar ${opt.dataset.batas} ekor/m²)`;
+        disp.classList.toggle('text-success', isNormal);
+        disp.classList.toggle('text-danger', !isNormal);
+        document.getElementById('padat_tebar_info').textContent =
+            `${Number(opt.dataset.benih).toLocaleString('id-ID')} ekor ÷ ${Number(opt.dataset.luas).toLocaleString('id-ID')} m² = ${opt.dataset.kepadatan} ekor/m² (Normal ${ikan}: ${opt.dataset.batas} ekor/m²)`;
+    }
+    document.addEventListener('DOMContentLoaded', syncTambakKualitas);
+</script>
 <script>
     function bukaDetailKualitasAir(rowEl) {
         if (!rowEl) return;

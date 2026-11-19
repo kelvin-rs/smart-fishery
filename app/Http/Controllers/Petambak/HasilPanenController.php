@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Petambak;
 use App\Http\Controllers\Controller;
 use App\Models\Timbangan;
 use App\Models\Kud;
+use App\Models\Tambak;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -14,7 +15,7 @@ class HasilPanenController extends Controller
     {
         $user = Auth::user();
 
-        $query = Timbangan::where(function($q) use ($user) {
+        $query = Timbangan::with('tambak')->where(function($q) use ($user) {
             $q->where('user_id', $user->id)
               ->orWhere('id_tambak', $user->id_tambak);
         });
@@ -33,7 +34,12 @@ class HasilPanenController extends Controller
             $query->whereDate('tanggal_panen', $request->tanggal);
         }
 
-        // Filter Komoditas
+        // Filter Unit Tambak
+        if ($request->filled('id_tambak')) {
+            $query->where('id_tambak', $request->id_tambak);
+        }
+
+        // Filter Komoditas (opsional)
         if ($request->filled('jenis_ikan')) {
             $query->where('jenis_ikan', $request->jenis_ikan);
         }
@@ -41,7 +47,18 @@ class HasilPanenController extends Controller
         $harvests = $query->orderBy('id', 'desc')->paginate(10)->withQueryString();
         $kudPrices = Kud::all()->pluck('harga', 'jenis_ikan')->toArray();
 
-        return view('petambak.panen.index', compact('user', 'harvests', 'kudPrices'));
+        $tambaks = Tambak::where(function($q) use ($user) {
+            if ($user) {
+                $q->where('user_id', $user->id)
+                  ->orWhere('id', $user->id_tambak);
+            }
+        })->get();
+
+        if ($tambaks->isEmpty()) {
+            $tambaks = Tambak::all();
+        }
+
+        return view('petambak.panen.index', compact('user', 'harvests', 'kudPrices', 'tambaks'));
     }
 
     public function destroy($id)
@@ -67,19 +84,21 @@ class HasilPanenController extends Controller
         $request->validate([
             'id_tambak' => 'required',
             'tanggal_panen' => 'required|date',
-            'banyak_panen' => 'required|numeric|min:1',
-            'jenis_ikan' => 'required|in:Bandeng,Vaname,Windu',
+            'banyak_panen' => 'required|numeric|min:0.1',
         ]);
 
-        $hargaKg = Kud::where('jenis_ikan', $request->jenis_ikan)->value('harga') ?? 20000;
-        $total = (int) round($request->banyak_panen * $hargaKg);
+        $tambak = Tambak::find($request->id_tambak);
+        $jenisIkan = $tambak->jenis_ikan ?? ($request->jenis_ikan ?? 'Bandeng');
+
+        $hargaKg = Kud::where('jenis_ikan', $jenisIkan)->value('harga') ?? 20000;
+        $total = (int) round(((float) $request->banyak_panen) * $hargaKg);
 
         Timbangan::create([
             'user_id' => Auth::id(),
             'id_tambak' => $request->id_tambak,
             'tanggal_panen' => $request->tanggal_panen,
-            'banyak_panen' => (int) $request->banyak_panen,
-            'jenis_ikan' => $request->jenis_ikan,
+            'banyak_panen' => (float) $request->banyak_panen,
+            'jenis_ikan' => $jenisIkan,
             'total' => $total,
         ]);
 
